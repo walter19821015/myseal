@@ -5,64 +5,51 @@
     <link rel="icon" type="image/svg+xml" href="./logo64.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>印章生成器</title>
+
+    <!-- 引用项目核心样式表 -->
     <link rel="stylesheet" crossorigin href="./index-B9o7yvK4.css">
+
+    <style>
+      /* 1. 彻底删除顶部中间导航：首页、印章模板、关于我们、联系我们 */
+      .nav-links,
+      header .nav-links,
+      nav .nav-links {
+        display: none !important;
+      }
+
+      /* 2. 彻底删除顶部右侧的登录按钮 */
+      .login-btn,
+      header .login-btn,
+      .user-actions {
+        display: none !important;
+      }
+
+      /* 3. 彻底删除底部整块深灰色的版权与法律条款 */
+      footer,
+      .footer {
+        display: none !important;
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>
+
+    <!-- 引用核心逻辑 -->
     <script type="module" crossorigin src="./index-BeSQZLB_.js"></script>
 
     <script>
+      // 页面挂载后，将左上角 DrawStamp 替换为 印章生成器
       (function() {
-        var navigated = false;
-
-        function handleDomModifications() {
-          // 1. 将左侧所有 "DrawStamp" 物理替换为 "印章生成器"
-          var textNodes = document.querySelectorAll('header *, nav *, h1, a, span, div');
-          textNodes.forEach(function(el) {
-            if (el.children.length === 0 && el.textContent && el.textContent.trim() === 'DrawStamp') {
-              el.textContent = '印章生成器';
-            }
-          });
-
-          // 2. 找到“印章模板”按钮
-          var allLinks = Array.from(document.querySelectorAll('header a, nav a, header button, nav button, span, div'));
-          var stampBtn = allLinks.find(function(el) {
-            return (el.innerText || el.textContent || '').trim() === '印章模板';
-          });
-
-          // 如果还没切入编辑页，且检测到了按钮：先模拟点击切进编辑页
-          if (stampBtn && !navigated) {
-            stampBtn.click();
-            navigated = true;
+        var timer = setInterval(function() {
+          var logo = document.querySelector('.logo');
+          if (logo) {
+            logo.textContent = '印章生成器';
           }
+        }, 50);
 
-          // 3. 点击切入后（或者检测到元素已经在编辑台），物理删除“印章模板”这 4 个字及对应节点
-          if (navigated && stampBtn) {
-            stampBtn.remove();
-          }
-
-          // 4. 清理残留的外围多余项
-          var links = document.querySelectorAll('header a, header button, nav a, nav button');
-          links.forEach(function(el) {
-            var txt = (el.innerText || el.textContent || '').trim();
-            if (txt === '首页' || txt === '关于我们' || txt === '联系我们' || txt === '登录') {
-              el.remove();
-            }
-          });
-
-          var footers = document.querySelectorAll('footer');
-          footers.forEach(function(el) { el.remove(); });
-        }
-
-        // 持续监听 DOM 渲染变化
-        var observer = new MutationObserver(handleDomModifications);
-        observer.observe(document.body, { childList: true, subtree: true });
-
-        // 轮询触发，保证进站瞬间即刻响应
-        var pollTimer = setInterval(handleDomModifications, 40);
         setTimeout(function() {
-          clearInterval(pollTimer);
-        }, 8000);
+          clearInterval(timer);
+        }, 6000);
       })();
     </script>
   </body>
