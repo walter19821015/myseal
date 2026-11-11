@@ -7,7 +7,7 @@
     <title>印章生成器</title>
 
     <script>
-      // 核心拦截：如果不是以 /maker 结尾，在整个 Vue 实例启动前瞬间重定向到 /maker 路由
+      // 保持停留在 /maker 编辑台
       (function() {
         var p = window.location.pathname;
         if (!p.endsWith('/maker') && !p.endsWith('/maker/')) {
@@ -24,7 +24,20 @@
     <script src="https://res.zvo.cn/translate/translate.js"></script>
 
     <style>
-      /* 1. 屏蔽所有首页废话、原版中间导航、登录按钮、页脚 */
+      /* ================= 解决问题 1：永久彻底封杀安全警告弹窗与横幅 ================= */
+      .legal-disclaimer,
+      .legal-dialog-overlay,
+      .legal-dialog,
+      [class*="legal-disclaimer"],
+      [class*="legal-dialog"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        z-index: -9999 !important;
+      }
+
+      /* 屏蔽所有首页废话、原版中间导航、登录按钮、页脚 */
       .nav-links,
       .login-btn,
       .user-actions,
@@ -43,7 +56,7 @@
         display: none !important;
       }
 
-      /* 2. 顶栏排版与自定义按钮规范 */
+      /* 顶栏排版与自定义按钮 */
       .nav-content, header {
         display: flex !important;
         align-items: center !important;
@@ -85,16 +98,32 @@
         border-color: rgba(0, 0, 0, 0.25) !important;
       }
 
-      /* 3. 模板卡片防裂 */
-      .template-item img,
-      .template-preview img,
-      .template-preview-small img {
+      /* ================= 解决问题 2：彻底清除模板卡片里破损裂开的难看红叉 ================= */
+      .template-item-horizontal,
+      .template-item {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 120px !important;
+        background: #ffffff !important;
+      }
+
+      /* 只要是裂开的图片，彻底隐藏，不显示破损框 */
+      img[data-broken="true"],
+      .img-broken {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        width: 0 !important;
+      }
+
+      /* 让有完整图的正常显示 */
+      .template-preview img:not([data-broken="true"]),
+      .template-preview-small img:not([data-broken="true"]) {
         object-fit: contain;
         width: 100%;
         height: 100%;
-      }
-      img[data-broken="true"] {
-        display: none !important;
       }
     </style>
   </head>
@@ -105,7 +134,7 @@
 
     <script>
       (function() {
-        // A. 标题重命名
+        // 1. 标题重命名
         setInterval(function() {
           var logo = document.querySelector('.logo');
           if (logo && logo.textContent !== '印章生成器') {
@@ -113,7 +142,7 @@
           }
         }, 150);
 
-        // B. 挂载自定义翻译菜单和首页按钮
+        // 2. 挂载自定义翻译菜单和首页按钮
         function mountTranslate() {
           if (document.getElementById('lang-dropdown-wrapper')) return;
 
@@ -166,25 +195,31 @@
         var mountTimer = setInterval(mountTranslate, 150);
         setTimeout(function() { clearInterval(mountTimer); }, 8000);
 
-        // C. 修复模板图片
-        function fixBrokenImages() {
+        // 3. 彻底清除裂开图片的破损红叉与边框
+        function cleanBrokenImages() {
           var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
           imgs.forEach(function(img) {
-            if (img.dataset.hasHooked) return;
-            img.dataset.hasHooked = "true";
+            // 如果图片加载失败，直接隐藏
             img.onerror = function() {
-              var currentSrc = img.src;
-              if (img.dataset.triedOriginal === "true") {
-                img.setAttribute('data-broken', 'true');
-                return;
+              this.style.display = 'none';
+              this.setAttribute('data-broken', 'true');
+              this.classList.add('img-broken');
+              if (this.parentElement) {
+                this.parentElement.style.display = 'none';
               }
-              img.dataset.triedOriginal = "true";
-              var relativePath = currentSrc.replace(window.location.origin, '').replace(/^\/myseal/, '');
-              img.src = 'https://drawstamp.com' + relativePath;
             };
+            // 针对已处于自然破损状态的做即时隐藏
+            if (img.naturalWidth === 0 && img.complete) {
+              img.style.display = 'none';
+              img.setAttribute('data-broken', 'true');
+              img.classList.add('img-broken');
+              if (img.parentElement) {
+                img.parentElement.style.display = 'none';
+              }
+            }
           });
         }
-        setInterval(fixBrokenImages, 500);
+        setInterval(cleanBrokenImages, 300);
       })();
     </script>
   </body>
