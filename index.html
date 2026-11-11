@@ -1,19 +1,12 @@
 <!doctype html>
 <html lang="zh-CN">
-  <script>
-      // 进站自动直达印章制作台
+<script>
       (function() {
-        var timer = setInterval(function() {
-          var elements = Array.from(document.querySelectorAll('a, button, span, div'));
-          var btn = elements.find(function(el) {
-            return el.textContent && el.textContent.trim() === '印章模板';
-          });
-          if (btn) {
-            btn.click();
-            clearInterval(timer);
-          }
-        }, 30);
-        setTimeout(function() { clearInterval(timer); }, 6000);
+        // 如果当前不在 maker 路由，在 DOM 解析前直接重写当前历史栈并触发页面挂载
+        if (!window.location.pathname.endsWith('/maker') && !window.location.pathname.endsWith('/maker/')) {
+          var targetPath = window.location.pathname.replace(/\/$/, '') + '/maker';
+          window.history.replaceState(null, '', targetPath);
+        }
       })();
     </script>
   <head>
