@@ -24,7 +24,7 @@
     <script src="https://res.zvo.cn/translate/translate.js"></script>
 
     <style>
-      /* 永久彻底封杀安全警告弹窗与横幅 */
+      /* ================= 解决问题 1：永久彻底封杀安全警告弹窗与横幅 ================= */
       .legal-disclaimer,
       .legal-dialog-overlay,
       .legal-dialog,
@@ -34,6 +34,7 @@
         visibility: hidden !important;
         opacity: 0 !important;
         pointer-events: none !important;
+        z-index: -9999 !important;
       }
 
       /* 屏蔽所有首页废话、原版中间导航、登录按钮、页脚 */
@@ -97,33 +98,32 @@
         border-color: rgba(0, 0, 0, 0.25) !important;
       }
 
-      /* 模板卡片样式正常恢复 */
-      .template-preview,
-      .template-preview-small {
+      /* ================= 解决问题 2：彻底清除模板卡片里破损裂开的难看红叉 ================= */
+      .template-item-horizontal,
+      .template-item {
         display: flex !important;
+        flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
-        background: #f8fafc !important;
-        height: 120px !important;
-        overflow: hidden !important;
+        min-height: 120px !important;
+        background: #ffffff !important;
       }
 
-      .template-preview img,
-      .template-preview-small img {
-        display: block !important;
-        object-fit: contain !important;
-        width: 100% !important;
-        height: 100% !important;
-      }
-
-      /* 隐藏软盘图标旁边的 5/5 配额字样 */
-      .save-count-badge,
-      .save-count-small,
-      .canvas-action-btn span,
-      [class*="save-count"] {
+      /* 只要是裂开的图片，彻底隐藏，不显示破损框 */
+      img[data-broken="true"],
+      .img-broken {
         display: none !important;
-        font-size: 0 !important;
         visibility: hidden !important;
+        height: 0 !important;
+        width: 0 !important;
+      }
+
+      /* 让有完整图的正常显示 */
+      .template-preview img:not([data-broken="true"]),
+      .template-preview-small img:not([data-broken="true"]) {
+        object-fit: contain;
+        width: 100%;
+        height: 100%;
       }
     </style>
   </head>
@@ -195,120 +195,31 @@
         var mountTimer = setInterval(mountTranslate, 150);
         setTimeout(function() { clearInterval(mountTimer); }, 8000);
 
-        // 3. 核心：把所有裂开的卡片，重新画出漂亮的红色印章（还原原版样式）
-        function generateStampIcon(text) {
-          var cvs = document.createElement('canvas');
-          cvs.width = 160;
-          cvs.height = 160;
-          var ctx = cvs.getContext('2d');
-
-          // 画外红圈
-          ctx.strokeStyle = '#e60012';
-          ctx.lineWidth = 4;
-          ctx.beginPath();
-          ctx.arc(80, 80, 70, 0, Math.PI * 2);
-          ctx.stroke();
-
-          // 画中心五角星
-          ctx.fillStyle = '#e60012';
-          ctx.beginPath();
-          for (var i = 0; i < 5; i++) {
-            var a1 = (18 + i * 72) * Math.PI / 180;
-            var a2 = (54 + i * 72) * Math.PI / 180;
-            ctx.lineTo(80 + Math.cos(a1) * 20, 80 - Math.sin(a1) * 20);
-            ctx.lineTo(80 + Math.cos(a2) * 8, 80 - Math.sin(a2) * 8);
-          }
-          ctx.closePath();
-          ctx.fill();
-
-          // 绘制卡片对应的文字
-          ctx.font = 'bold 15px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          var cleanText = (text || '印章模板').substring(0, 6);
-          ctx.fillText(cleanText, 80, 118);
-
-          return cvs.toDataURL('image/png');
-        }
-
-        function restoreOriginalImages() {
-          var items = document.querySelectorAll('.template-item, .template-item-horizontal, [class*="template-item"]');
-          items.forEach(function(item) {
-            var img = item.querySelector('img');
-            var titleEl = item.querySelector('.template-name, .template-name-small, span, h4');
-            var titleText = titleEl ? (titleEl.innerText || titleEl.textContent || '').trim() : '';
-
-            // 如果图片加载失败或没有图片，就地生成印章图案还原
-            if (img) {
-              if (img.dataset.restored) return;
-
-              img.onerror = function() {
-                this.src = generateStampIcon(titleText);
-                this.dataset.restored = "true";
-              };
-
-              if (img.naturalWidth === 0 && img.complete) {
-                img.src = generateStampIcon(titleText);
-                img.dataset.restored = "true";
+        // 3. 彻底清除裂开图片的破损红叉与边框
+        function cleanBrokenImages() {
+          var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
+          imgs.forEach(function(img) {
+            // 如果图片加载失败，直接隐藏
+            img.onerror = function() {
+              this.style.display = 'none';
+              this.setAttribute('data-broken', 'true');
+              this.classList.add('img-broken');
+              if (this.parentElement) {
+                this.parentElement.style.display = 'none';
               }
-            } else {
-              var previewBox = item.querySelector('.template-preview, .template-preview-small');
-              if (previewBox && !previewBox.querySelector('img')) {
-                var newImg = document.createElement('img');
-                newImg.src = generateStampIcon(titleText);
-                previewBox.appendChild(newImg);
+            };
+            // 针对已处于自然破损状态的做即时隐藏
+            if (img.naturalWidth === 0 && img.complete) {
+              img.style.display = 'none';
+              img.setAttribute('data-broken', 'true');
+              img.classList.add('img-broken');
+              if (img.parentElement) {
+                img.parentElement.style.display = 'none';
               }
             }
           });
         }
-        setInterval(restoreOriginalImages, 300);
-
-        // 4. 精准接管图1按钮行为：
-        // 第二个图标 -> 触发导出图片弹窗（图2）
-        // 第四个图标 -> 去除 5/5 文本，且点击触发导出模板弹窗（图3）
-        function hookToolButtons() {
-          var actionBtns = document.querySelectorAll('.canvas-footer .canvas-action-btn, .canvas-action-btn');
-          if (!actionBtns || actionBtns.length < 4) return;
-
-          // 彻底抹除第4个按钮内部所有文本节点（去除 5/5）
-          var fourthBtn = actionBtns[3];
-          if (fourthBtn) {
-            Array.from(fourthBtn.childNodes).forEach(function(node) {
-              if (node.nodeType === Node.TEXT_NODE) {
-                node.textContent = '';
-              }
-            });
-          }
-
-          // 绑定第二个按钮：确保触发导出图片弹窗（图2）
-          var secondBtn = actionBtns[1];
-          if (secondBtn && !secondBtn.dataset.hooked) {
-            secondBtn.dataset.hooked = "true";
-            secondBtn.addEventListener('click', function() {
-              var rawExportImgBtn = document.querySelector('.primary-button') || Array.from(document.querySelectorAll('button')).find(function(b) {
-                return (b.innerText || '').indexOf('导出') !== -1 && (b.innerText || '').indexOf('模板') === -1;
-              });
-              if (rawExportImgBtn && rawExportImgBtn !== secondBtn) {
-                rawExportImgBtn.click();
-              }
-            }, true);
-          }
-
-          // 绑定第四个按钮：确保触发导出模板弹窗（图3）
-          if (fourthBtn && !fourthBtn.dataset.hooked) {
-            fourthBtn.dataset.hooked = "true";
-            fourthBtn.addEventListener('click', function() {
-              var rawExportTplBtn = document.querySelector('.save-template-btn') || Array.from(document.querySelectorAll('button')).find(function(b) {
-                return (b.innerText || '').indexOf('导出模板') !== -1;
-              });
-              if (rawExportTplBtn && rawExportTplBtn !== fourthBtn) {
-                rawExportTplBtn.click();
-              }
-            }, true);
-          }
-        }
-
-        setInterval(hookToolButtons, 200);
+        setInterval(cleanBrokenImages, 300);
       })();
     </script>
   </body>
