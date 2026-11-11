@@ -7,7 +7,6 @@
     <title>印章生成器</title>
 
     <script>
-      // 保持停留在 /maker 编辑台
       (function() {
         var p = window.location.pathname;
         if (!p.endsWith('/maker') && !p.endsWith('/maker/')) {
@@ -110,19 +109,18 @@
         align-items: center !important;
         justify-content: center !important;
         position: relative !important;
-        opacity: 1 !important; /* 强制所有按钮亮起，绝不灰显 */
+        opacity: 1 !important;
         cursor: pointer !important;
         pointer-events: auto !important;
       }
 
-      /* 强制第4个软盘图标恢复正常深色，不透明，彻底去灰 */
       .canvas-action-btn:last-child,
       .canvas-action-btn:last-child * {
         opacity: 1 !important;
         filter: none !important;
       }
 
-      /* 彻底抹除第4个软盘图标旁边的 3/5 配额文字 */
+      /* 抹除软盘图标旁边的 3/5 配额文字 */
       .save-count-badge,
       .save-count-small,
       [class*="save-count"] {
@@ -150,7 +148,7 @@
         height: 100% !important;
       }
 
-      /* ================= 严格复刻弹窗层级与遮罩 ================= */
+      /* ================= 弹窗底层与样式 ================= */
       .native-modal-overlay {
         position: fixed !important;
         top: 0 !important;
@@ -217,7 +215,7 @@
         color: #bfbfbf !important;
       }
 
-      /* 图4：选择导出格式弹窗样式 */
+      /* 图4：选择导出格式弹窗完整样式 */
       .fmt-modal-box {
         width: 530px !important;
         max-width: 95vw !important;
@@ -227,7 +225,7 @@
       }
       .fmt-modal-title {
         color: #e53e3e !important;
-        font-size: 16px !important;
+        font-size: 18px !important;
         font-weight: 600 !important;
         margin-bottom: 12px !important;
         text-align: left !important;
@@ -241,9 +239,9 @@
       .fmt-option-card {
         display: flex !important;
         align-items: center !important;
-        border: 1px solid #e5e7eb !important;
+        border: 1px solid #d9d9d9 !important;
         border-radius: 6px !important;
-        padding: 10px 14px !important;
+        padding: 12px 16px !important;
         margin-bottom: 10px !important;
         cursor: pointer !important;
         background: #ffffff !important;
@@ -253,36 +251,32 @@
         background: #f6ffed !important;
       }
       .fmt-badge {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: 28px !important;
-        height: 28px !important;
-        border-radius: 4px !important;
+        font-size: 20px !important;
         margin-right: 12px !important;
-        font-weight: bold !important;
-      }
-      .ratio-btn {
-        padding: 4px 10px !important;
-        font-size: 12px !important;
-        border: 1px solid #d9d9d9 !important;
-        border-radius: 4px !important;
-        background: #ffffff !important;
-        cursor: pointer !important;
-        color: #595959 !important;
-      }
-      .ratio-btn.active {
-        border-color: #52c41a !important;
-        color: #52c41a !important;
       }
 
-      /* 统一按钮区 */
-      .modal-footer-btns {
-        display: flex !important;
-        justify-content: flex-end !important;
-        gap: 12px !important;
-        margin-top: 24px !important;
+      /* 滑块控件 */
+      .slider-track {
+        width: 100% !important;
+        accent-color: #52c41a !important;
+        cursor: pointer !important;
       }
+
+      /* 比例胶囊按钮 */
+      .ratio-pill-btn {
+        padding: 4px 14px !important;
+        font-size: 12px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 14px !important;
+        background: #ffffff !important;
+        cursor: pointer !important;
+        color: #1f2937 !important;
+      }
+      .ratio-pill-btn.active {
+        border-color: #007bff !important;
+        color: #007bff !important;
+      }
+
       .btn-tpl-cancel {
         padding: 6px 18px !important;
         background: #f5f5f5 !important;
@@ -309,7 +303,7 @@
   <body>
     <div id="app"></div>
 
-    <!-- ================= 图 2 导出模板弹窗（图1第二个按钮触发） ================= -->
+    <!-- ================= 导出模板弹窗（图1第二个按钮触发） ================= -->
     <div id="popup-template-dialog" class="native-modal-overlay">
       <div class="native-modal-window tpl-modal-box">
         <div class="tpl-modal-title">导出模板</div>
@@ -322,74 +316,82 @@
         </div>
         <input id="custom-tpl-tags" type="text" class="tpl-input-field-gray" placeholder="请输入印章分类 (可填多个，使用空格分隔，例如：书法印章 有机印章 节气)" />
 
-        <div class="modal-footer-btns">
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px;">
           <button id="btn-close-tpl" type="button" class="btn-tpl-cancel">取消</button>
           <button id="btn-save-tpl-action" type="button" class="btn-tpl-confirm">导出</button>
         </div>
       </div>
     </div>
 
-    <!-- ================= 图 4 选择导出格式弹窗（图3第四个软盘图标触发） ================= -->
+    <!-- ================= 选择导出格式弹窗（第四个软盘图标触发，动态换算联动） ================= -->
     <div id="popup-export-dialog" class="native-modal-overlay">
       <div class="native-modal-window fmt-modal-box">
         <div class="fmt-modal-title">选择导出格式</div>
         <div class="fmt-header-tip">请选择您要导出的图片格式：</div>
 
         <!-- PNG -->
-        <div class="fmt-option-card active" onclick="switchExportFormat(this, 'png')">
-          <span class="fmt-badge" style="background:#e6f7ff;color:#1890ff;">🖼️</span>
-          <span style="font-weight:600;width:60px;font-size:14px;text-align:left;">PNG</span>
+        <div class="fmt-option-card active" onclick="changeFmt(this, 'png')">
+          <span class="fmt-badge">🖼️</span>
+          <span style="font-weight:600;width:60px;font-size:14px;text-align:left;color:#1f2937;">PNG</span>
           <span style="font-size:12px;color:#8c8c8c;">支持透明背景，适合打印</span>
         </div>
 
         <!-- JPEG -->
-        <div class="fmt-option-card" onclick="switchExportFormat(this, 'jpeg')">
-          <span class="fmt-badge" style="background:#fffbe6;color:#faad14;">📷</span>
-          <span style="font-weight:600;width:60px;font-size:14px;text-align:left;">JPEG</span>
+        <div class="fmt-option-card" onclick="changeFmt(this, 'jpeg')">
+          <span class="fmt-badge">📷</span>
+          <span style="font-weight:600;width:60px;font-size:14px;text-align:left;color:#1f2937;">JPEG</span>
           <span style="font-size:12px;color:#8c8c8c;">文件较小，适合网络分享</span>
         </div>
 
         <!-- SVG -->
-        <div class="fmt-option-card" onclick="switchExportFormat(this, 'svg')">
-          <span class="fmt-badge" style="background:#f6ffed;color:#52c41a;">📐</span>
-          <span style="font-weight:600;width:60px;font-size:14px;text-align:left;">SVG</span>
+        <div class="fmt-option-card" onclick="changeFmt(this, 'svg')">
+          <span class="fmt-badge">📐</span>
+          <span style="font-weight:600;width:60px;font-size:14px;text-align:left;color:#1f2937;">SVG</span>
           <span style="font-size:12px;color:#8c8c8c;">矢量格式，可无损缩放</span>
         </div>
 
-        <!-- 导出尺寸 -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;margin-bottom:8px;">
-          <span style="font-size:13px;font-weight:600;color:#1f2937;">导出尺寸</span>
-          <span style="font-size:12px;color:#52c41a;cursor:pointer;" onclick="resetDefaultSize()">恢复默认尺寸</span>
+        <!-- JPEG专属质量滑块 -->
+        <div id="jpeg-quality-wrap" style="display:none;margin-top:14px;margin-bottom:14px;">
+          <div id="quality-val-label" style="text-align:center;font-size:13px;color:#333;margin-bottom:8px;">图片质量：70%</div>
+          <input id="quality-slider" type="range" min="10" max="100" value="70" class="slider-track" oninput="updateQuality(this.value)" />
         </div>
 
-        <!-- 比例切换 -->
+        <hr style="border:none;border-top:1px solid #f0f0f0;margin:14px 0;" />
+
+        <!-- 导出尺寸 -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:13px;font-weight:600;color:#1f2937;">导出尺寸</span>
+          <span style="font-size:12px;color:#52c41a;cursor:pointer;" onclick="setRatio('origin')">恢复默认尺寸</span>
+        </div>
+
+        <!-- 固定比例 -->
         <div style="text-align:center;font-size:13px;font-weight:600;color:#1f2937;margin-bottom:8px;">固定比例</div>
         <div style="display:flex;gap:8px;justify-content:center;margin-bottom:8px;">
-          <button type="button" class="ratio-btn active">原始比例</button>
-          <button type="button" class="ratio-btn">正方形</button>
-          <button type="button" class="ratio-btn">4:3</button>
-          <button type="button" class="ratio-btn">16:9</button>
-          <button type="button" class="ratio-btn">自定义</button>
+          <button id="ratio-btn-origin" type="button" class="ratio-pill-btn active" onclick="setRatio('origin')">原始比例</button>
+          <button id="ratio-btn-square" type="button" class="ratio-pill-btn" onclick="setRatio('square')">正方形</button>
+          <button id="ratio-btn-4-3" type="button" class="ratio-pill-btn" onclick="setRatio('4:3')">4 : 3</button>
+          <button id="ratio-btn-16-9" type="button" class="ratio-pill-btn" onclick="setRatio('16:9')">16 : 9</button>
+          <button id="ratio-btn-custom" type="button" class="ratio-pill-btn" onclick="setRatio('custom')">自定义</button>
         </div>
 
         <div style="text-align:center;font-size:12px;color:#e53e3e;margin-bottom:10px;">选择固定宽高比，或使用自定义尺寸</div>
 
-        <!-- 宽高输入 -->
+        <!-- 宽高输入框 -->
         <div style="display:flex;gap:18px;justify-content:center;align-items:center;">
           <div style="text-align:center;">
             <div style="font-size:12px;color:#595959;margin-bottom:4px;">宽度 (px)</div>
-            <input id="input-exp-w" type="number" value="420" style="width:100px;height:32px;text-align:center;border:1px solid #d9d9d9;border-radius:4px;outline:none;" />
+            <input id="dyn-inp-w" type="number" value="420" oninput="onWidthChange(this.value)" style="width:120px;height:34px;text-align:center;border:1px solid #d9d9d9;border-radius:4px;outline:none;" />
           </div>
           <div style="text-align:center;">
             <div style="font-size:12px;color:#595959;margin-bottom:4px;">高度 (px)</div>
-            <input id="input-exp-h" type="number" value="320" style="width:100px;height:32px;text-align:center;border:1px solid #d9d9d9;border-radius:4px;outline:none;" />
+            <input id="dyn-inp-h" type="number" value="320" oninput="onHeightChange(this.value)" style="width:120px;height:34px;text-align:center;border:1px solid #d9d9d9;border-radius:4px;outline:none;" />
           </div>
         </div>
 
         <div style="font-size:12px;color:#e53e3e;text-align:center;margin-top:10px;">默认尺寸：420px × 320px</div>
         <div style="font-size:12px;color:#e53e3e;text-align:center;margin-top:2px;">支持 100px - 4096px 范围</div>
 
-        <div class="modal-footer-btns">
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
           <button id="btn-close-exp" type="button" class="btn-tpl-cancel">取消</button>
           <button id="btn-do-exp-action" type="button" class="btn-tpl-confirm">导出</button>
         </div>
@@ -399,16 +401,77 @@
     <script type="module" crossorigin src="./index-BeSQZLB_.js"></script>
 
     <script>
-      window.selectedExportFormat = 'png';
-      window.switchExportFormat = function(el, fmt) {
-        document.querySelectorAll('.fmt-option-card').forEach(function(card) { card.classList.remove('active'); });
+      // 动态响应换算核心
+      window.curFormat = 'png';
+      window.curRatio = 'origin';
+
+      // 切换格式与滑块显示
+      window.changeFmt = function(el, fmt) {
+        document.querySelectorAll('.fmt-option-card').forEach(function(c) { c.classList.remove('active'); });
         el.classList.add('active');
-        window.selectedExportFormat = fmt;
+        window.curFormat = fmt;
+
+        var qWrap = document.getElementById('jpeg-quality-wrap');
+        if (fmt === 'jpeg') {
+          qWrap.style.display = 'block';
+        } else {
+          qWrap.style.display = 'none';
+        }
       };
 
-      window.resetDefaultSize = function() {
-        document.getElementById('input-exp-w').value = 420;
-        document.getElementById('input-exp-h').value = 320;
+      // 滑块变动
+      window.updateQuality = function(val) {
+        document.getElementById('quality-val-label').textContent = '图片质量：' + val + '%';
+      };
+
+      // 比例按钮联动动态算数
+      window.setRatio = function(ratioType) {
+        window.curRatio = ratioType;
+        document.querySelectorAll('.ratio-pill-btn').forEach(function(b) { b.classList.remove('active'); });
+
+        var wInp = document.getElementById('dyn-inp-w');
+        var hInp = document.getElementById('dyn-inp-h');
+        var baseW = parseInt(wInp.value) || 420;
+
+        if (ratioType === 'origin') {
+          document.getElementById('ratio-btn-origin').classList.add('active');
+          wInp.value = 420;
+          hInp.value = 320;
+        } else if (ratioType === 'square') {
+          document.getElementById('ratio-btn-square').classList.add('active');
+          hInp.value = baseW;
+        } else if (ratioType === '4:3') {
+          document.getElementById('ratio-btn-4-3').classList.add('active');
+          hInp.value = Math.round(baseW * (3 / 4)); // 420 -> 315
+        } else if (ratioType === '16:9') {
+          document.getElementById('ratio-btn-16-9').classList.add('active');
+          hInp.value = Math.round(baseW * (9 / 16)); // 420 -> 236
+        } else if (ratioType === 'custom') {
+          document.getElementById('ratio-btn-custom').classList.add('active');
+        }
+      };
+
+      // 宽度修改时根据当前比例自动算出高度
+      window.onWidthChange = function(w) {
+        var valW = parseInt(w) || 0;
+        var hInp = document.getElementById('dyn-inp-h');
+        if (window.curRatio === 'square') {
+          hInp.value = valW;
+        } else if (window.curRatio === '4:3') {
+          hInp.value = Math.round(valW * (3 / 4));
+        } else if (window.curRatio === '16:9') {
+          hInp.value = Math.round(valW * (9 / 16));
+        } else if (window.curRatio === 'origin') {
+          hInp.value = Math.round(valW * (320 / 420));
+        }
+      };
+
+      window.onHeightChange = function() {
+        if (window.curRatio !== 'custom') {
+          document.querySelectorAll('.ratio-pill-btn').forEach(function(b) { b.classList.remove('active'); });
+          document.getElementById('ratio-btn-custom').classList.add('active');
+          window.curRatio = 'custom';
+        }
       };
 
       (function() {
@@ -471,7 +534,7 @@
         var mountTimer = setInterval(mountTranslate, 150);
         setTimeout(function() { clearInterval(mountTimer); }, 8000);
 
-        // 3. 模板真图拉取（保持图4原貌）
+        // 3. 模板真图拉取（保持原貌）
         function restoreTemplateImages() {
           var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
           imgs.forEach(function(img) {
@@ -494,7 +557,7 @@
         }
         setInterval(restoreTemplateImages, 300);
 
-        // 4. 弹窗打开、关闭与导出逻辑
+        // 4. 弹窗显示/隐藏控制
         var popupTpl = document.getElementById('popup-template-dialog');
         var popupExp = document.getElementById('popup-export-dialog');
 
@@ -504,45 +567,44 @@
         popupTpl.onclick = function(e) { if (e.target === popupTpl) popupTpl.style.display = 'none'; };
         popupExp.onclick = function(e) { if (e.target === popupExp) popupExp.style.display = 'none'; };
 
-        // 导出模板动作
+        // 导出模板保存文件
         document.getElementById('btn-save-tpl-action').onclick = function() {
-          var tplTitle = document.getElementById('custom-tpl-title').value.trim() || '印章模板';
-          var tplData = localStorage.getItem('drawstamp_current_stamp') || '{}';
-          var blob = new Blob([tplData], { type: 'application/json' });
+          var title = document.getElementById('custom-tpl-title').value.trim() || '印章模板';
+          var data = localStorage.getItem('drawstamp_current_stamp') || '{}';
+          var blob = new Blob([data], { type: 'application/json' });
           var link = document.createElement('a');
-          link.download = tplTitle + '.json';
+          link.download = title + '.json';
           link.href = URL.createObjectURL(blob);
           link.click();
           popupTpl.style.display = 'none';
         };
 
-        // 导出图片动作
+        // 导出图片执行
         document.getElementById('btn-do-exp-action').onclick = function() {
           var canvas = document.querySelector('canvas');
           if (canvas) {
-            var fmt = window.selectedExportFormat || 'png';
+            var fmt = window.curFormat || 'png';
             var link = document.createElement('a');
             link.download = '印章.' + fmt;
-            link.href = canvas.toDataURL(fmt === 'jpeg' ? 'image/jpeg' : 'image/png');
+            var quality = parseInt(document.getElementById('quality-slider').value) / 100;
+            link.href = canvas.toDataURL(fmt === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
             link.click();
           }
           popupExp.style.display = 'none';
         };
 
-        // 5. 核心：强力事件拦截与去灰恢复
+        // 5. 绑定图1操作台按钮事件
         function bindAllActionButtons() {
           var btns = document.querySelectorAll('.canvas-footer .canvas-action-btn, .canvas-action-btn');
           if (!btns || btns.length < 4) return;
 
-          // A. 处理第 4 个软盘图标：去灰、去 3/5 文字、绑定导出格式弹窗
+          // A. 处理第4个软盘图标：彻底去灰、去 3/5 文字、绑定选择导出格式弹窗
           var fourthBtn = btns[3];
           if (fourthBtn) {
-            // 强力去灰，恢复正常色彩
             fourthBtn.removeAttribute('disabled');
             fourthBtn.style.opacity = '1';
             fourthBtn.style.filter = 'none';
 
-            // 彻底清掉 3/5
             Array.from(fourthBtn.childNodes).forEach(function(n) {
               if (n.nodeType === Node.TEXT_NODE && n.textContent.trim()) {
                 n.textContent = '';
@@ -560,7 +622,7 @@
             }
           }
 
-          // B. 处理第 2 个上箭头图标：强力绑定导出模板弹窗
+          // B. 处理第2个上箭头图标：绑定导出模板弹窗
           var secondBtn = btns[1];
           if (secondBtn && !secondBtn.dataset.strictTplBound) {
             secondBtn.dataset.strictTplBound = "true";
