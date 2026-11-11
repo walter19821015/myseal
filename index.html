@@ -148,7 +148,7 @@
         height: 100% !important;
       }
 
-      /* 弹窗遮罩及卡片样式 */
+      /* ================= 弹窗底层与样式 ================= */
       .native-modal-overlay {
         position: fixed !important;
         top: 0 !important;
@@ -170,6 +170,7 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif !important;
       }
 
+      /* 图2：导出模板弹窗样式 */
       .tpl-modal-box {
         width: 540px !important;
         max-width: 95vw !important;
@@ -214,6 +215,7 @@
         color: #bfbfbf !important;
       }
 
+      /* 图4：选择导出格式弹窗完整样式 */
       .fmt-modal-box {
         width: 530px !important;
         max-width: 95vw !important;
@@ -253,12 +255,14 @@
         margin-right: 12px !important;
       }
 
+      /* 滑块控件 */
       .slider-track {
         width: 100% !important;
         accent-color: #52c41a !important;
         cursor: pointer !important;
       }
 
+      /* 比例胶囊按钮 */
       .ratio-pill-btn {
         padding: 4px 14px !important;
         font-size: 12px !important;
@@ -299,10 +303,11 @@
   <body>
     <div id="app"></div>
 
-    <!-- 导出模板弹窗 -->
+    <!-- ================= 导出模板弹窗（图1第二个按钮触发） ================= -->
     <div id="popup-template-dialog" class="native-modal-overlay">
       <div class="native-modal-window tpl-modal-box">
         <div class="tpl-modal-title">导出模板</div>
+        
         <div class="tpl-modal-center-label">请输入印章模板标题</div>
         <input id="custom-tpl-title" type="text" class="tpl-input-field" value="印章类型" />
 
@@ -318,7 +323,7 @@
       </div>
     </div>
 
-    <!-- 选择导出格式弹窗 -->
+    <!-- ================= 选择导出格式弹窗（第四个软盘图标触发，动态换算联动） ================= -->
     <div id="popup-export-dialog" class="native-modal-overlay">
       <div class="native-modal-window fmt-modal-box">
         <div class="fmt-modal-title">选择导出格式</div>
@@ -396,22 +401,30 @@
     <script type="module" crossorigin src="./index-BeSQZLB_.js"></script>
 
     <script>
+      // 动态响应换算核心
       window.curFormat = 'png';
       window.curRatio = 'origin';
 
+      // 切换格式与滑块显示
       window.changeFmt = function(el, fmt) {
         document.querySelectorAll('.fmt-option-card').forEach(function(c) { c.classList.remove('active'); });
         el.classList.add('active');
         window.curFormat = fmt;
 
         var qWrap = document.getElementById('jpeg-quality-wrap');
-        qWrap.style.display = (fmt === 'jpeg') ? 'block' : 'none';
+        if (fmt === 'jpeg') {
+          qWrap.style.display = 'block';
+        } else {
+          qWrap.style.display = 'none';
+        }
       };
 
+      // 滑块变动
       window.updateQuality = function(val) {
         document.getElementById('quality-val-label').textContent = '图片质量：' + val + '%';
       };
 
+      // 比例按钮联动动态算数
       window.setRatio = function(ratioType) {
         window.curRatio = ratioType;
         document.querySelectorAll('.ratio-pill-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -429,15 +442,16 @@
           hInp.value = baseW;
         } else if (ratioType === '4:3') {
           document.getElementById('ratio-btn-4-3').classList.add('active');
-          hInp.value = Math.round(baseW * (3 / 4));
+          hInp.value = Math.round(baseW * (3 / 4)); // 420 -> 315
         } else if (ratioType === '16:9') {
           document.getElementById('ratio-btn-16-9').classList.add('active');
-          hInp.value = Math.round(baseW * (9 / 16));
+          hInp.value = Math.round(baseW * (9 / 16)); // 420 -> 236
         } else if (ratioType === 'custom') {
           document.getElementById('ratio-btn-custom').classList.add('active');
         }
       };
 
+      // 宽度修改时根据当前比例自动算出高度
       window.onWidthChange = function(w) {
         var valW = parseInt(w) || 0;
         var hInp = document.getElementById('dyn-inp-h');
@@ -461,6 +475,7 @@
       };
 
       (function() {
+        // 1. 标题重命名
         setInterval(function() {
           var logo = document.querySelector('.logo');
           if (logo && logo.textContent !== '印章生成器') {
@@ -468,6 +483,7 @@
           }
         }, 150);
 
+        // 2. 自定义翻译菜单和首页按钮
         function mountTranslate() {
           if (document.getElementById('lang-dropdown-wrapper')) return;
           var navContainer = document.querySelector('.nav-content') || document.querySelector('.navbar') || document.querySelector('header');
@@ -518,6 +534,7 @@
         var mountTimer = setInterval(mountTranslate, 150);
         setTimeout(function() { clearInterval(mountTimer); }, 8000);
 
+        // 3. 模板真图拉取（保持原貌）
         function restoreTemplateImages() {
           var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
           imgs.forEach(function(img) {
@@ -540,6 +557,7 @@
         }
         setInterval(restoreTemplateImages, 300);
 
+        // 4. 弹窗显示/隐藏控制
         var popupTpl = document.getElementById('popup-template-dialog');
         var popupExp = document.getElementById('popup-export-dialog');
 
@@ -549,6 +567,7 @@
         popupTpl.onclick = function(e) { if (e.target === popupTpl) popupTpl.style.display = 'none'; };
         popupExp.onclick = function(e) { if (e.target === popupExp) popupExp.style.display = 'none'; };
 
+        // 导出模板保存文件
         document.getElementById('btn-save-tpl-action').onclick = function() {
           var title = document.getElementById('custom-tpl-title').value.trim() || '印章模板';
           var data = localStorage.getItem('drawstamp_current_stamp') || '{}';
@@ -560,100 +579,26 @@
           popupTpl.style.display = 'none';
         };
 
-        // ================= 严格精准裁切：获取纯印章内容（0标尺，0网格） =================
+        // 导出图片执行
         document.getElementById('btn-do-exp-action').onclick = function() {
-          popupExp.style.display = 'none';
-
-          var targetW = parseInt(document.getElementById('dyn-inp-w').value) || 420;
-          var targetH = parseInt(document.getElementById('dyn-inp-h').value) || 320;
-          var fmt = window.curFormat || 'png';
-          var quality = parseInt(document.getElementById('quality-slider').value) / 100;
-
-          // 获取原版印章 SVG 标签（只有纯印章文字、红圈，不包含标尺网格）
-          var stampSvg = document.querySelector('.stamp-workspace svg, .canvas-container svg, .stamp-svg, svg[id*="stamp"]');
-          if (!stampSvg) {
-            // 兜底：从非操作栏的 SVG 中筛选
-            stampSvg = Array.from(document.querySelectorAll('svg')).find(function(s) {
-              return !s.closest('.nav-content') && !s.closest('#lang-dropdown-wrapper') && !s.closest('.canvas-footer') && s.clientWidth > 50;
-            });
-          }
-
-          // A. 导出 SVG
-          if (fmt === 'svg') {
-            var svgData = stampSvg ? (new XMLSerializer()).serializeToString(stampSvg) : '';
-            if (svgData) {
-              var blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-              var link = document.createElement('a');
-              link.download = 'mystamp.svg';
-              link.href = URL.createObjectURL(blob);
-              link.click();
-              return;
-            }
-          }
-
-          // B. 导出 PNG / JPEG
-          if (stampSvg) {
-            // 从纯净 SVG 重新绘制到离屏 Canvas，绝对不含外层标尺网格
-            var sData = (new XMLSerializer()).serializeToString(stampSvg);
-            var svgBlob = new Blob([sData], { type: 'image/svg+xml;charset=utf-8' });
-            var url = URL.createObjectURL(svgBlob);
-            var img = new Image();
-            img.onload = function() {
-              var outCanvas = document.createElement('canvas');
-              outCanvas.width = targetW;
-              outCanvas.height = targetH;
-              var ctx = outCanvas.getContext('2d');
-
-              if (fmt === 'jpeg') {
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, targetW, targetH);
-              }
-
-              ctx.drawImage(img, 0, 0, targetW, targetH);
-              URL.revokeObjectURL(url);
-
-              var link = document.createElement('a');
-              link.download = 'mystamp.' + fmt;
-              link.href = outCanvas.toDataURL(fmt === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
-              link.click();
-            };
-            img.src = url;
-            return;
-          }
-
-          // 如果没有找到 SVG，从主 Canvas 自动裁剪掉四周的标尺边界
-          var allCanvases = Array.from(document.querySelectorAll('canvas'));
-          var mainCanvas = allCanvases[allCanvases.length - 1];
-          if (mainCanvas) {
-            var outCanvas = document.createElement('canvas');
-            outCanvas.width = targetW;
-            outCanvas.height = targetH;
-            var ctx = outCanvas.getContext('2d');
-
-            if (fmt === 'jpeg') {
-              ctx.fillStyle = '#ffffff';
-              ctx.fillRect(0, 0, targetW, targetH);
-            }
-
-            // 标尺宽度通常占据左上角 20~30px，从纯净区域切取印章
-            var rulerOffset = 25;
-            var sw = Math.max(1, mainCanvas.width - rulerOffset);
-            var sh = Math.max(1, mainCanvas.height - rulerOffset);
-
-            ctx.drawImage(mainCanvas, rulerOffset, rulerOffset, sw, sh, 0, 0, targetW, targetH);
-
+          var canvas = document.querySelector('canvas');
+          if (canvas) {
+            var fmt = window.curFormat || 'png';
             var link = document.createElement('a');
-            link.download = 'mystamp.' + fmt;
-            link.href = outCanvas.toDataURL(fmt === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
+            link.download = '印章.' + fmt;
+            var quality = parseInt(document.getElementById('quality-slider').value) / 100;
+            link.href = canvas.toDataURL(fmt === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
             link.click();
           }
+          popupExp.style.display = 'none';
         };
 
+        // 5. 绑定图1操作台按钮事件
         function bindAllActionButtons() {
           var btns = document.querySelectorAll('.canvas-footer .canvas-action-btn, .canvas-action-btn');
           if (!btns || btns.length < 4) return;
 
-          // 第 4 个软盘图标
+          // A. 处理第4个软盘图标：彻底去灰、去 3/5 文字、绑定选择导出格式弹窗
           var fourthBtn = btns[3];
           if (fourthBtn) {
             fourthBtn.removeAttribute('disabled');
@@ -677,7 +622,7 @@
             }
           }
 
-          // 第 2 个上箭头图标
+          // B. 处理第2个上箭头图标：绑定导出模板弹窗
           var secondBtn = btns[1];
           if (secondBtn && !secondBtn.dataset.strictTplBound) {
             secondBtn.dataset.strictTplBound = "true";
