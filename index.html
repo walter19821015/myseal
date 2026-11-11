@@ -580,14 +580,87 @@
         };
 
         // 导出图片执行
-        document.getElementById('btn-do-exp-action').onclick = function() {
-          var canvas = document.querySelector('canvas');
-          if (canvas) {
-            var fmt = window.curFormat || 'png';
+document.getElementById('btn-do-exp-action').onclick = function() {
+          var targetW = parseInt(document.getElementById('dyn-inp-w')?.value || 420);
+          var targetH = parseInt(document.getElementById('dyn-inp-h')?.value || 320);
+          var fmt = window.curFormat || 'png';
+          var quality = parseInt(document.getElementById('quality-slider')?.value || 70) / 100;
+
+          // 提取纯印章的矢量 SVG（不包含标尺和网格）
+          var stampSvg = document.querySelector('.stamp-workspace svg, .canvas-container svg, .stamp-svg, svg[id*="stamp"]');
+          if (!stampSvg) {
+            stampSvg = Array.from(document.querySelectorAll('svg')).find(function(s) {
+              return !s.closest('.nav-content') && !s.closest('#lang-dropdown-wrapper') && !s.closest('.canvas-footer') && s.clientWidth > 50;
+            });
+          }
+
+          // A. 导出 SVG 格式
+          if (fmt === 'svg') {
+            var svgData = stampSvg ? (new XMLSerializer()).serializeToString(stampSvg) : '';
+            if (svgData) {
+              var blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+              var link = document.createElement('a');
+              link.download = 'mystamp.svg';
+              link.href = URL.createObjectURL(blob);
+              link.click();
+              popupExp.style.display = 'none';
+              return;
+            }
+          }
+
+          // B. 导出 PNG / JPEG（从纯 SVG 生成，无任何标尺网格）
+          if (stampSvg) {
+            var sData = (new XMLSerializer()).serializeToString(stampSvg);
+            var svgBlob = new Blob([sData], { type: 'image/svg+xml;charset=utf-8' });
+            var url = URL.createObjectURL(svgBlob);
+            var img = new Image();
+            img.onload = function() {
+              var outCanvas = document.createElement('canvas');
+              outCanvas.width = targetW;
+              outCanvas.height = targetH;
+              var ctx = outCanvas.getContext('2d');
+              if (fmt === 'jpeg') {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, targetW, targetH);
+              }
+              ctx.drawImage(img, 0, 0, targetW, targetH);
+              URL.revokeObjectURL(url);
+
+              var link = document.createElement('a');
+              link.download = 'mystamp.' + fmt;
+              link.href = outCanvas.toDataURL(fmt === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
+              link.click();
+            };
+            img.src = url;
+            popupExp.style.display = 'none';
+            return;
+          }
+
+          // C. 兜底方案：裁剪画布，剔除标尺
+          var allCanvases = Array.from(document.querySelectorAll('canvas'));
+          var mainCanvas = allCanvases.find(function(c) {
+            var cls = (c.className || '') + ' ' + (c.parentElement ? c.parentElement.className : '');
+            return cls.indexOf('ruler') === -1 && cls.indexOf('grid') === -1 && c.width > 100;
+          }) || allCanvases[allCanvases.length - 1];
+
+          if (mainCanvas) {
+            var outCanvas = document.createElement('canvas');
+            outCanvas.width = targetW;
+            outCanvas.height = targetH;
+            var ctx = outCanvas.getContext('2d');
+            if (fmt === 'jpeg') {
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, targetW, targetH);
+            }
+
+            var offset = 25;
+            var sw = Math.max(1, mainCanvas.width - offset);
+            var sh = Math.max(1, mainCanvas.height - offset);
+            ctx.drawImage(mainCanvas, offset, offset, sw, sh, 0, 0, targetW, targetH);
+
             var link = document.createElement('a');
-            link.download = '印章.' + fmt;
-            var quality = parseInt(document.getElementById('quality-slider').value) / 100;
-            link.href = canvas.toDataURL(fmt === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
+            link.download = 'mystamp.' + fmt;
+            link.href = outCanvas.toDataURL(fmt === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
             link.click();
           }
           popupExp.style.display = 'none';
