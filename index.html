@@ -13,8 +13,7 @@
     <script src="https://res.zvo.cn/translate/translate.js"></script>
 
     <style>
-      /* ================= 彻底清除所有废话广告与多余组件 ================= */
-      /* 1. 清除绿色 QQ 群横幅、紫色宣传大图、各类废话介绍 */
+      /* 1. 隐藏首页所有废话宣传与页脚 */
       .qq-notification-banner,
       .hero-section,
       .hero-content,
@@ -24,11 +23,13 @@
       .faq-section,
       .warning-section,
       .cta-section,
-      .stamp-types-section {
+      .stamp-types-section,
+      footer,
+      .footer {
         display: none !important;
       }
 
-      /* 2. 清除顶部原作者多余导航和登录按钮 */
+      /* 2. 隐藏原作者自带的导航与旧语言下拉框 */
       .nav-links,
       .login-btn,
       .user-actions,
@@ -39,13 +40,7 @@
         display: none !important;
       }
 
-      /* 3. 清除整块底部深灰区域 */
-      footer,
-      .footer {
-        display: none !important;
-      }
-
-      /* ================= 顶栏与自定义多语言按钮排版 ================= */
+      /* 3. 顶栏对齐与自定义按钮 */
       .nav-content, header {
         display: flex !important;
         align-items: center !important;
@@ -87,6 +82,12 @@
         border-color: rgba(0, 0, 0, 0.25) !important;
       }
 
+      /* 4. 确保工作台撑开 */
+      .main-workspace {
+        display: flex !important;
+        visibility: visible !important;
+      }
+
       /* 模板卡片防裂 */
       .template-item img,
       .template-preview img,
@@ -107,7 +108,7 @@
 
     <script>
       (function() {
-        // 1. 改名：左上角 DrawStamp -> 印章生成器
+        // A. 改名：左上角 DrawStamp -> 印章生成器
         setInterval(function() {
           var logo = document.querySelector('.logo');
           if (logo && logo.textContent !== '印章生成器') {
@@ -115,7 +116,37 @@
           }
         }, 200);
 
-        // 2. 挂载自定义翻译菜单和首页按钮（单次安全检查，绝不死循环）
+        // B. 平稳激活编辑器：只触发一次，绝不循环强刷
+        var hasTriggered = false;
+        var checkTimer = setInterval(function() {
+          if (hasTriggered) {
+            clearInterval(checkTimer);
+            return;
+          }
+
+          // 如果已经出现画布，直接停止
+          if (document.querySelector('canvas, .canvas-area, [class*="canvas"]')) {
+            hasTriggered = true;
+            clearInterval(checkTimer);
+            return;
+          }
+
+          // 寻找带有“印章模板”或者切换编辑器的链接，平稳点击一次
+          var allLinks = Array.from(document.querySelectorAll('a, button, span, .nav-link'));
+          var target = allLinks.find(function(el) {
+            return (el.innerText || el.textContent || '').trim() === '印章模板';
+          });
+
+          if (target) {
+            hasTriggered = true;
+            target.click();
+            clearInterval(checkTimer);
+          }
+        }, 100);
+
+        setTimeout(function() { clearInterval(checkTimer); }, 6000);
+
+        // C. 挂载自定义翻译菜单和首页按钮
         function mountTranslate() {
           if (document.getElementById('lang-dropdown-wrapper')) return;
 
@@ -168,7 +199,7 @@
         var mountTimer = setInterval(mountTranslate, 150);
         setTimeout(function() { clearInterval(mountTimer); }, 8000);
 
-        // 3. 模板裂图修复
+        // D. 修复模板图片
         function fixBrokenImages() {
           var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
           imgs.forEach(function(img) {
