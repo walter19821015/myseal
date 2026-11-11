@@ -580,17 +580,12 @@
         };
 
         // 导出图片执行
-        document.getElementById('btn-do-exp-action').onclick = function() {
-          var canvas = document.querySelector('canvas');
-          if (canvas) {
-            var fmt = window.curFormat || 'png';
-            var link = document.createElement('a');
-            link.download = '印章.' + fmt;
-            var quality = parseInt(document.getElementById('quality-slider').value) / 100;
-            link.href = canvas.toDataURL(fmt === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
-            link.click();
-          }
+document.getElementById('btn-do-exp-action').onclick = function() {
           popupExp.style.display = 'none';
+          var realBtn = document.querySelector('.confirm-button');
+          if (realBtn) {
+            realBtn.click();
+          }
         };
 
         // 5. 绑定图1操作台按钮事件
