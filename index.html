@@ -148,7 +148,7 @@
         height: 100% !important;
       }
 
-      /* ================= 弹窗底层与样式 ================= */
+      /* 弹窗遮罩及卡片样式 */
       .native-modal-overlay {
         position: fixed !important;
         top: 0 !important;
@@ -170,7 +170,6 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif !important;
       }
 
-      /* 图2：导出模板弹窗样式 */
       .tpl-modal-box {
         width: 540px !important;
         max-width: 95vw !important;
@@ -215,7 +214,6 @@
         color: #bfbfbf !important;
       }
 
-      /* 图4：选择导出格式弹窗完整样式 */
       .fmt-modal-box {
         width: 530px !important;
         max-width: 95vw !important;
@@ -255,14 +253,12 @@
         margin-right: 12px !important;
       }
 
-      /* 滑块控件 */
       .slider-track {
         width: 100% !important;
         accent-color: #52c41a !important;
         cursor: pointer !important;
       }
 
-      /* 比例胶囊按钮 */
       .ratio-pill-btn {
         padding: 4px 14px !important;
         font-size: 12px !important;
@@ -303,11 +299,10 @@
   <body>
     <div id="app"></div>
 
-    <!-- ================= 导出模板弹窗（图1第二个按钮触发） ================= -->
+    <!-- 导出模板弹窗 -->
     <div id="popup-template-dialog" class="native-modal-overlay">
       <div class="native-modal-window tpl-modal-box">
         <div class="tpl-modal-title">导出模板</div>
-        
         <div class="tpl-modal-center-label">请输入印章模板标题</div>
         <input id="custom-tpl-title" type="text" class="tpl-input-field" value="印章类型" />
 
@@ -323,7 +318,7 @@
       </div>
     </div>
 
-    <!-- ================= 选择导出格式弹窗（第四个软盘图标触发，动态换算联动） ================= -->
+    <!-- 选择导出格式弹窗 -->
     <div id="popup-export-dialog" class="native-modal-overlay">
       <div class="native-modal-window fmt-modal-box">
         <div class="fmt-modal-title">选择导出格式</div>
@@ -401,30 +396,22 @@
     <script type="module" crossorigin src="./index-BeSQZLB_.js"></script>
 
     <script>
-      // 动态响应换算核心
       window.curFormat = 'png';
       window.curRatio = 'origin';
 
-      // 切换格式与滑块显示
       window.changeFmt = function(el, fmt) {
         document.querySelectorAll('.fmt-option-card').forEach(function(c) { c.classList.remove('active'); });
         el.classList.add('active');
         window.curFormat = fmt;
 
         var qWrap = document.getElementById('jpeg-quality-wrap');
-        if (fmt === 'jpeg') {
-          qWrap.style.display = 'block';
-        } else {
-          qWrap.style.display = 'none';
-        }
+        qWrap.style.display = (fmt === 'jpeg') ? 'block' : 'none';
       };
 
-      // 滑块变动
       window.updateQuality = function(val) {
         document.getElementById('quality-val-label').textContent = '图片质量：' + val + '%';
       };
 
-      // 比例按钮联动动态算数
       window.setRatio = function(ratioType) {
         window.curRatio = ratioType;
         document.querySelectorAll('.ratio-pill-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -442,16 +429,15 @@
           hInp.value = baseW;
         } else if (ratioType === '4:3') {
           document.getElementById('ratio-btn-4-3').classList.add('active');
-          hInp.value = Math.round(baseW * (3 / 4)); // 420 -> 315
+          hInp.value = Math.round(baseW * (3 / 4));
         } else if (ratioType === '16:9') {
           document.getElementById('ratio-btn-16-9').classList.add('active');
-          hInp.value = Math.round(baseW * (9 / 16)); // 420 -> 236
+          hInp.value = Math.round(baseW * (9 / 16));
         } else if (ratioType === 'custom') {
           document.getElementById('ratio-btn-custom').classList.add('active');
         }
       };
 
-      // 宽度修改时根据当前比例自动算出高度
       window.onWidthChange = function(w) {
         var valW = parseInt(w) || 0;
         var hInp = document.getElementById('dyn-inp-h');
@@ -557,7 +543,7 @@
         }
         setInterval(restoreTemplateImages, 300);
 
-        // 4. 弹窗显示/隐藏控制
+        // 4. 弹窗打开/关闭
         var popupTpl = document.getElementById('popup-template-dialog');
         var popupExp = document.getElementById('popup-export-dialog');
 
@@ -567,7 +553,7 @@
         popupTpl.onclick = function(e) { if (e.target === popupTpl) popupTpl.style.display = 'none'; };
         popupExp.onclick = function(e) { if (e.target === popupExp) popupExp.style.display = 'none'; };
 
-        // 导出模板保存文件
+        // 导出模板
         document.getElementById('btn-save-tpl-action').onclick = function() {
           var title = document.getElementById('custom-tpl-title').value.trim() || '印章模板';
           var data = localStorage.getItem('drawstamp_current_stamp') || '{}';
@@ -579,26 +565,112 @@
           popupTpl.style.display = 'none';
         };
 
-        // 导出图片执行
+        // ================= 核心修复：纯净无标尺无网格的 1:1 印章导出 =================
         document.getElementById('btn-do-exp-action').onclick = function() {
-          var canvas = document.querySelector('canvas');
-          if (canvas) {
-            var fmt = window.curFormat || 'png';
+          popupExp.style.display = 'none';
+
+          var targetW = parseInt(document.getElementById('dyn-inp-w').value) || 420;
+          var targetH = parseInt(document.getElementById('dyn-inp-h').value) || 320;
+          var fmt = window.curFormat || 'png';
+          var quality = parseInt(document.getElementById('quality-slider').value) / 100;
+
+          // 获取中心印章真正的矢量根节点或内层图层（绝不获取工作区外层带标尺的容器）
+          var stampSvg = document.querySelector('.stamp-svg, .main-canvas svg, .canvas-area svg, svg[id*="stamp"]');
+
+          // A. 如果选择导出 SVG 矢量图
+          if (fmt === 'svg') {
+            var svgData = '';
+            if (stampSvg) {
+              svgData = (new XMLSerializer()).serializeToString(stampSvg);
+            } else {
+              // 备用：从全局查找
+              var svgs = Array.from(document.querySelectorAll('svg')).filter(function(s) {
+                return !s.closest('.nav-content') && !s.closest('#lang-dropdown-wrapper') && !s.closest('.canvas-footer');
+              });
+              if (svgs.length > 0) svgData = (new XMLSerializer()).serializeToString(svgs[0]);
+            }
+
+            if (svgData) {
+              var blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+              var link = document.createElement('a');
+              link.download = 'mystamp.svg';
+              link.href = URL.createObjectURL(blob);
+              link.click();
+              return;
+            }
+          }
+
+          // B. 导出 PNG / JPEG（从纯净矢量源转出，或者精准抓取纯印章内部离屏 Canvas）
+          // 查找画布内真正仅属于印章的 canvas（排除包含标尺的全局 canvas）
+          var stampCanvas = Array.from(document.querySelectorAll('canvas')).find(function(c) {
+            // 排除含有 ruler / grid 样式的画布
+            var cls = (c.className || '') + ' ' + (c.parentElement ? c.parentElement.className : '');
+            return cls.indexOf('ruler') === -1 && cls.indexOf('grid') === -1 && c.width > 100;
+          });
+
+          // 如果有纯净矢量 SVG，直接通过 Image 离屏绘制（最清晰，100% 纯透明底）
+          if (stampSvg) {
+            var sData = (new XMLSerializer()).serializeToString(stampSvg);
+            var svgBlob = new Blob([sData], { type: 'image/svg+xml;charset=utf-8' });
+            var url = URL.createObjectURL(svgBlob);
+            var img = new Image();
+            img.onload = function() {
+              var outCanvas = document.createElement('canvas');
+              outCanvas.width = targetW;
+              outCanvas.height = targetH;
+              var ctx = outCanvas.getContext('2d');
+
+              if (fmt === 'jpeg') {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, targetW, targetH);
+              }
+
+              ctx.drawImage(img, 0, 0, targetW, targetH);
+              URL.revokeObjectURL(url);
+
+              var link = document.createElement('a');
+              link.download = 'mystamp.' + fmt;
+              link.href = outCanvas.toDataURL(fmt === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
+              link.click();
+            };
+            img.src = url;
+            return;
+          }
+
+          // 如果是纯 Canvas 图层：执行离屏像素级裁剪居中
+          if (stampCanvas) {
+            var outCanvas = document.createElement('canvas');
+            outCanvas.width = targetW;
+            outCanvas.height = targetH;
+            var ctx = outCanvas.getContext('2d');
+
+            if (fmt === 'jpeg') {
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, targetW, targetH);
+            }
+
+            // 智能居中缩放绘制
+            var scale = Math.min(targetW / stampCanvas.width, targetH / stampCanvas.height);
+            var dw = stampCanvas.width * scale;
+            var dh = stampCanvas.height * scale;
+            var dx = (targetW - dw) / 2;
+            var dy = (targetH - dh) / 2;
+
+            ctx.drawImage(stampCanvas, dx, dy, dw, dh);
+
             var link = document.createElement('a');
-            link.download = '印章.' + fmt;
-            var quality = parseInt(document.getElementById('quality-slider').value) / 100;
-            link.href = canvas.toDataURL(fmt === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
+            link.download = 'mystamp.' + fmt;
+            link.href = outCanvas.toDataURL(fmt === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
             link.click();
           }
-          popupExp.style.display = 'none';
         };
 
-        // 5. 绑定图1操作台按钮事件
+        // 5. 绑定操作台按钮
         function bindAllActionButtons() {
           var btns = document.querySelectorAll('.canvas-footer .canvas-action-btn, .canvas-action-btn');
           if (!btns || btns.length < 4) return;
 
-          // A. 处理第4个软盘图标：彻底去灰、去 3/5 文字、绑定选择导出格式弹窗
+          // 第 4 个软盘图标：去灰、去配额文字、绑导出弹窗
           var fourthBtn = btns[3];
           if (fourthBtn) {
             fourthBtn.removeAttribute('disabled');
@@ -622,7 +694,7 @@
             }
           }
 
-          // B. 处理第2个上箭头图标：绑定导出模板弹窗
+          // 第 2 个上箭头图标：绑模板弹窗
           var secondBtn = btns[1];
           if (secondBtn && !secondBtn.dataset.strictTplBound) {
             secondBtn.dataset.strictTplBound = "true";
