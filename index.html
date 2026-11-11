@@ -605,16 +605,6 @@ document.getElementById('btn-do-exp-action').onclick = function() {
                 n.textContent = '';
               }
             });
-
-            if (!fourthBtn.dataset.strictExpBound) {
-              fourthBtn.dataset.strictExpBound = "true";
-              fourthBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                e.stopImmediatePropagation();
-                popupExp.style.display = 'flex';
-              }, true);
-            }
           }
 
           // B. 处理第2个上箭头图标：绑定导出模板弹窗
