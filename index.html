@@ -13,20 +13,28 @@
     <script src="https://res.zvo.cn/translate/translate.js"></script>
 
     <style>
-      /* 1. 隐藏原作者自带的杂质：中间导航、登录按钮、页脚 */
-      .nav-links, .login-btn, .user-actions, footer, .footer {
+      /* 1. 彻底抹除原作者的首页所有宣传广告（图1/图2/图3的所有废话） */
+      .hero-section,
+      .hero-content,
+      .qq-notification-banner,
+      .why-choose-section,
+      .how-it-works-section,
+      .features-section,
+      .faq-section,
+      .warning-section,
+      .cta-section,
+      .stamp-types-section,
+      footer,
+      .footer {
         display: none !important;
       }
 
-      /* 2. 隐藏原作者原来的 Language 下拉框 */
-      .language-switch,
-      .nav-right,
-      header select,
-      nav select {
+      /* 2. 隐藏原作者自带的顶部中间导航和登录 */
+      .nav-links, .login-btn, .user-actions, .language-switch, .nav-right, header select, nav select {
         display: none !important;
       }
 
-      /* 3. 自定义导航栏居中和样式适配 */
+      /* 3. 导航栏布局与我们自定义的 首页+语言 按钮 */
       .nav-content, header {
         display: flex !important;
         align-items: center !important;
@@ -68,6 +76,13 @@
         border-color: rgba(0, 0, 0, 0.25) !important;
       }
 
+      /* 4. 强制印章模板选择栏显示完整 */
+      .template-bar,
+      [class*="template-bar"] {
+        display: flex !important;
+        visibility: visible !important;
+      }
+
       /* 模板卡片图片防裂 */
       .template-item img,
       .template-preview img,
@@ -96,36 +111,27 @@
           }
         }, 100);
 
-        // B. 网址锁定 /myseal/，防止刷新跳 404
-        if (location.pathname.indexOf('/maker') !== -1) {
-          history.replaceState(null, '', '/myseal/');
-        }
-
-        // C. 进站秒进编辑操作台
+        // B. 进站直接切出印章模板和编辑台（若停留在宣传首页，自动点进模板页）
         var initTimer = setInterval(function() {
-          if (document.querySelector('canvas, .canvas-container')) {
-            clearInterval(initTimer);
-            if (location.pathname !== '/myseal/') {
-              history.replaceState(null, '', '/myseal/');
-            }
-            return;
-          }
-          var btns = Array.from(document.querySelectorAll('a, button, span'));
+          // 查找“印章模板”或者带模板文字的按钮直接触发进入制作台
+          var btns = Array.from(document.querySelectorAll('a, button, span, .nav-link'));
           var target = btns.find(function(el) {
             return (el.innerText || el.textContent || '').trim() === '印章模板';
           });
-          if (target) target.click();
-        }, 30);
+          if (target && !document.querySelector('.template-bar')) {
+            target.click();
+          }
+        }, 50);
 
-        // D. 挂载自定义翻译菜单和首页按钮
+        setTimeout(function() { clearInterval(initTimer); }, 5000);
+
+        // C. 挂载自定义翻译菜单和首页按钮
         function mountTranslate() {
           if (document.getElementById('lang-dropdown-wrapper')) return;
 
-          // 核心纠正：兼容真实存在的 .nav-content、.navbar 或 header 容器
           var navContainer = document.querySelector('.nav-content') || document.querySelector('.navbar') || document.querySelector('header');
           if (!navContainer) return;
 
-          // 初始化翻译组件
           if (typeof translate !== 'undefined') {
             translate.selectLanguageTag.show = false;
             translate.service.use('client.edge');
@@ -169,11 +175,10 @@
           };
         }
 
-        // 高频监测 Vue 挂载状态并挂入组件
         var mountTimer = setInterval(mountTranslate, 100);
         setTimeout(function() { clearInterval(mountTimer); }, 10000);
 
-        // E. 修复裂图
+        // D. 补全裂开的模板图标
         function fixBrokenImages() {
           var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
           imgs.forEach(function(img) {
