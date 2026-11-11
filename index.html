@@ -13,43 +13,56 @@
 
     <script>
       (function() {
-        var triggered = false;
-
-        function initApp() {
-          // 1. 改名：左上角 DrawStamp -> 印章生成器
-          var allNodes = document.querySelectorAll('header *, nav *, h1, a, span, div');
-          allNodes.forEach(function(el) {
+        function cleanup() {
+          // 1. 将左侧所有 DrawStamp 改为 印章生成器
+          var headerTexts = document.querySelectorAll('header *, nav *, h1, a, span, div');
+          headerTexts.forEach(function(el) {
             if (el.children.length === 0 && (el.textContent || '').trim() === 'DrawStamp') {
               el.textContent = '印章生成器';
             }
           });
 
-          // 2. 自动触发进入编辑台
-          if (triggered) return;
-          var isEditorVisible = !!document.querySelector('canvas, .canvas-container, [class*="canvas"]');
-          if (isEditorVisible) {
-            triggered = true;
-            return;
-          }
-
-          var candidates = Array.from(document.querySelectorAll('header a, nav a, header button, nav button, span, div'));
-          var stampTarget = candidates.find(function(el) {
-            return (el.innerText || el.textContent || '').trim() === '印章模板';
+          // 2. 彻底删除图2部分：首页、印章模板、关于我们、联系我们、登录
+          var targets = ['首页', '印章模板', '关于我们', '联系我们', '登录'];
+          var items = document.querySelectorAll('header a, header button, nav a, nav button, header span, nav span');
+          items.forEach(function(el) {
+            var txt = (el.innerText || el.textContent || '').trim();
+            if (targets.indexOf(txt) !== -1) {
+              el.remove();
+            }
           });
 
-          if (stampTarget) {
-            ['mousedown', 'mouseup', 'click'].forEach(function(evt) {
-              stampTarget.dispatchEvent(new MouseEvent(evt, { bubbles: true, cancelable: true, view: window }));
-            });
-            triggered = true;
-          }
+          // 3. 彻底删除图3部分：底部整个深灰色区域
+          var footers = document.querySelectorAll('footer');
+          footers.forEach(function(el) {
+            el.remove();
+          });
+
+          var allDivs = document.querySelectorAll('div');
+          allDivs.forEach(function(el) {
+            var txt = el.innerText || '';
+            if (
+              (txt.includes('DrawStamp. 保留所有权利') || 
+               txt.includes('严禁用于任何非法用途') || 
+               txt.includes('快速链接') || 
+               txt.includes('法律信息')) &&
+              el.children.length > 0 && 
+              !el.querySelector('#app') &&
+              !el.querySelector('canvas')
+            ) {
+              el.remove();
+            }
+          });
         }
 
-        var observer = new MutationObserver(initApp);
+        // 监听并执行删除
+        var observer = new MutationObserver(cleanup);
         observer.observe(document.body, { childList: true, subtree: true });
 
-        var timer = setInterval(initApp, 30);
-        setTimeout(function() { clearInterval(timer); }, 6000);
+        var timer = setInterval(cleanup, 50);
+        setTimeout(function() {
+          clearInterval(timer);
+        }, 10000);
       })();
     </script>
   </body>
