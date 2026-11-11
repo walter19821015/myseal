@@ -10,23 +10,8 @@
     <link rel="stylesheet" crossorigin href="./index-B9o7yvK4.css">
 
     <style>
-      /* 彻底隐藏顶部中间无用导航 */
-      .nav-links,
-      header .nav-links,
-      nav .nav-links {
-        display: none !important;
-      }
-
-      /* 彻底隐藏顶部右侧登录按钮 */
-      .login-btn,
-      header .login-btn,
-      .user-actions {
-        display: none !important;
-      }
-
-      /* 彻底隐藏底部版权与条款 */
-      footer,
-      .footer {
+      /* 隐藏多余导航与页脚 */
+      .nav-links, .login-btn, .user-actions, footer, .footer {
         display: none !important;
       }
     </style>
@@ -34,44 +19,43 @@
   <body>
     <div id="app"></div>
 
-    <!-- 引用核心逻辑 -->
     <script type="module" crossorigin src="./index-BeSQZLB_.js"></script>
 
     <script>
       (function() {
-        // 1. 改名：左上角 DrawStamp -> 印章生成器
-        var nameTimer = setInterval(function() {
+        // 1. 改名
+        setInterval(function() {
           var logo = document.querySelector('.logo');
-          if (logo) {
+          if (logo && logo.textContent !== '印章生成器') {
             logo.textContent = '印章生成器';
           }
-        }, 50);
+        }, 100);
 
-        // 2. 原地无缝切入编辑台，绝不修改浏览器物理地址栏（防止刷新404）
-        var routeTimer = setInterval(function() {
-          // 如果编辑台已经渲染，停止派发
-          if (document.querySelector('canvas, .canvas-container, [class*="canvas"]')) {
-            clearInterval(routeTimer);
+        // 2. 核心：如果地址栏误入了 /maker 导致刷新会404，立刻修正回 /myseal/
+        if (location.pathname.indexOf('/maker') !== -1) {
+          history.replaceState(null, '', '/myseal/');
+        }
+
+        // 3. 原地触发：进站直接把编辑器点开，且地址栏稳稳锁在 /myseal/
+        var timer = setInterval(function() {
+          if (document.querySelector('canvas, .canvas-container')) {
+            clearInterval(timer);
+            // 确保渲染后地址依然在 /myseal/，怎么刷新都不丢
+            if (location.pathname !== '/myseal/') {
+              history.replaceState(null, '', '/myseal/');
+            }
             return;
           }
 
-          // 自动触发内置路由的切换事件，原地切换视图
-          var allLinks = Array.from(document.querySelectorAll('a, button, span'));
-          var target = allLinks.find(function(el) {
+          var btns = Array.from(document.querySelectorAll('a, button, span'));
+          var target = btns.find(function(el) {
             return (el.innerText || el.textContent || '').trim() === '印章模板';
           });
 
           if (target) {
-            ['mousedown', 'mouseup', 'click'].forEach(function(evt) {
-              target.dispatchEvent(new MouseEvent(evt, { bubbles: true, cancelable: true, view: window }));
-            });
+            target.click();
           }
         }, 30);
-
-        setTimeout(function() {
-          clearInterval(nameTimer);
-          clearInterval(routeTimer);
-        }, 8000);
       })();
     </script>
   </body>
