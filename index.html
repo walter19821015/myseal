@@ -593,7 +593,7 @@ document.getElementById('btn-do-exp-action').onclick = function() {
           var btns = document.querySelectorAll('.canvas-footer .canvas-action-btn, .canvas-action-btn');
           if (!btns || btns.length < 4) return;
 
-          // A. 处理第4个软盘图标：彻底去灰、去 3/5 文字、绑定选择导出格式弹窗
+// A. 处理第4个软盘图标：解除置灰，并点击直接唤起原版无标尺弹窗
           var fourthBtn = btns[3];
           if (fourthBtn) {
             fourthBtn.removeAttribute('disabled');
@@ -605,6 +605,24 @@ document.getElementById('btn-do-exp-action').onclick = function() {
                 n.textContent = '';
               }
             });
+
+            fourthBtn.onclick = function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+
+              // 找到已存在于 DOM 中的原版导出弹窗并置顶显示
+              var diag = document.querySelector('.dialog-buttons');
+              if (diag) {
+                var p = diag.parentElement;
+                while (p && p !== document.body) {
+                  p.style.display = 'flex';
+                  p.style.visibility = 'visible';
+                  p.style.opacity = '1';
+                  p.style.zIndex = '999999';
+                  p = p.parentElement;
+                }
+              }
+            };
           }
 
           // B. 处理第2个上箭头图标：绑定导出模板弹窗
