@@ -12,7 +12,7 @@
     <!-- 引入翻译引擎核心 -->
     <script src="https://res.zvo.cn/translate/translate.js"></script>
 
-    <!-- 1. 锁死顶栏样式，强制左侧标题与右侧胶囊按钮严格垂直居中 -->
+    <!-- 顶栏与右侧胶囊按钮样式 -->
     <style>
       header {
         position: sticky !important;
@@ -82,7 +82,7 @@
     <div id="app"></div>
 
     <script>
-      // 进站自动直达印章制作台
+      // 1. 进站自动直达印章制作台
       (function() {
         var timer = setInterval(function() {
           var elements = Array.from(document.querySelectorAll('a, button, span, div'));
@@ -97,7 +97,7 @@
         setTimeout(function() { clearInterval(timer); }, 6000);
       })();
 
-      // 顶部挂载组件与翻译初始化
+      // 2. 挂载右侧定制胶囊按钮（首页 + 语言下拉）
       (function() {
         function initTranslate() {
           if (typeof translate === 'undefined') {
@@ -160,19 +160,19 @@
         }
       })();
 
-      // 页面清理与顶部左侧标题注入
+      // 3. 严格物理删除（remove）指定节点，修复模板缩略图裂开
       (function() {
         var cleanTimer = setInterval(function() {
-          // 彻底物理删除底部区域
+          // A. 物理彻底删除底部所有元素与版权信息
           var footers = document.querySelectorAll('footer, .footer, [class*="footer-wrapper"], [class*="bottom-bar"]');
           footers.forEach(function(f) {
             f.remove();
           });
 
-          // 改造顶部栏
+          // B. 顶栏处理：左侧标题，物理删除中间与右侧无用项
           var header = document.querySelector('header');
           if (header) {
-            // 确保最左侧显示“印章生成器”
+            // 左侧写入“印章生成器”
             if (!document.getElementById('custom-header-title')) {
               var titleSpan = document.createElement('div');
               titleSpan.id = 'custom-header-title';
@@ -180,32 +180,30 @@
               header.prepend(titleSpan);
             }
 
-            // 物理删除原作者无用元素（中间导航、原作者Logo/英文、登录按钮、旧语言下拉框）
-            var toRemove = header.querySelectorAll('a, button, span, div, select, p');
-            toRemove.forEach(function(el) {
-              if (el.id === 'custom-header-title') return; // 保留最左侧的“印章生成器”
-              if (el.closest('#lang-dropdown-wrapper')) return; // 保留右侧的主页与语言按钮
-
+            // 物理删除原作者无用元素
+            var els = header.querySelectorAll('*');
+            els.forEach(function(el) {
+              if (el.id === 'custom-header-title' || el.closest('#lang-dropdown-wrapper')) return;
               var txt = el.textContent ? el.textContent.trim() : '';
+              // 删除英文Logo、中间菜单项、登录按钮
               if (txt === 'DrawStamp' || ['首页', '印章模板', '关于我们', '联系我们', '登录'].indexOf(txt) !== -1) {
                 el.remove();
               }
+              // 删除原作者旧语言下拉框
               if (txt.indexOf('Language') !== -1 && el.tagName === 'DIV' && !el.id) {
                 el.remove();
               }
             });
           }
 
-          // 修复模板图片相对路径
+          // C. 修复模板裂开图标：自动读取原作者内置静态模板路径并补齐
           var imgs = document.querySelectorAll('.template-item img, [class*="template"] img');
           imgs.forEach(function(img) {
             if (img.src && img.src.indexOf('/src/assets/') !== -1) {
               img.src = img.src.replace('/src/assets/', './assets/');
             }
           });
-        }, 150);
-
-        setTimeout(function() { clearInterval(cleanTimer); }, 10000);
+        }, 100);
       })();
     </script>
 
