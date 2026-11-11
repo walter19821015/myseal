@@ -13,28 +13,39 @@
     <script src="https://res.zvo.cn/translate/translate.js"></script>
 
     <style>
-      /* 1. 彻底抹除原作者的首页所有宣传广告（图1/图2/图3的所有废话） */
+      /* ================= 彻底清除所有废话广告与多余组件 ================= */
+      /* 1. 清除绿色 QQ 群横幅、紫色宣传大图、各类废话介绍 */
+      .qq-notification-banner,
       .hero-section,
       .hero-content,
-      .qq-notification-banner,
       .why-choose-section,
       .how-it-works-section,
       .features-section,
       .faq-section,
       .warning-section,
       .cta-section,
-      .stamp-types-section,
+      .stamp-types-section {
+        display: none !important;
+      }
+
+      /* 2. 清除顶部原作者多余导航和登录按钮 */
+      .nav-links,
+      .login-btn,
+      .user-actions,
+      .language-switch,
+      .nav-right,
+      header select,
+      nav select {
+        display: none !important;
+      }
+
+      /* 3. 清除整块底部深灰区域 */
       footer,
       .footer {
         display: none !important;
       }
 
-      /* 2. 隐藏原作者自带的顶部中间导航和登录 */
-      .nav-links, .login-btn, .user-actions, .language-switch, .nav-right, header select, nav select {
-        display: none !important;
-      }
-
-      /* 3. 导航栏布局与我们自定义的 首页+语言 按钮 */
+      /* ================= 顶栏与自定义多语言按钮排版 ================= */
       .nav-content, header {
         display: flex !important;
         align-items: center !important;
@@ -76,14 +87,7 @@
         border-color: rgba(0, 0, 0, 0.25) !important;
       }
 
-      /* 4. 强制印章模板选择栏显示完整 */
-      .template-bar,
-      [class*="template-bar"] {
-        display: flex !important;
-        visibility: visible !important;
-      }
-
-      /* 模板卡片图片防裂 */
+      /* 模板卡片防裂 */
       .template-item img,
       .template-preview img,
       .template-preview-small img {
@@ -103,29 +107,15 @@
 
     <script>
       (function() {
-        // A. 改名：左上角 DrawStamp -> 印章生成器
+        // 1. 改名：左上角 DrawStamp -> 印章生成器
         setInterval(function() {
           var logo = document.querySelector('.logo');
           if (logo && logo.textContent !== '印章生成器') {
             logo.textContent = '印章生成器';
           }
-        }, 100);
+        }, 200);
 
-        // B. 进站直接切出印章模板和编辑台（若停留在宣传首页，自动点进模板页）
-        var initTimer = setInterval(function() {
-          // 查找“印章模板”或者带模板文字的按钮直接触发进入制作台
-          var btns = Array.from(document.querySelectorAll('a, button, span, .nav-link'));
-          var target = btns.find(function(el) {
-            return (el.innerText || el.textContent || '').trim() === '印章模板';
-          });
-          if (target && !document.querySelector('.template-bar')) {
-            target.click();
-          }
-        }, 50);
-
-        setTimeout(function() { clearInterval(initTimer); }, 5000);
-
-        // C. 挂载自定义翻译菜单和首页按钮
+        // 2. 挂载自定义翻译菜单和首页按钮（单次安全检查，绝不死循环）
         function mountTranslate() {
           if (document.getElementById('lang-dropdown-wrapper')) return;
 
@@ -175,10 +165,10 @@
           };
         }
 
-        var mountTimer = setInterval(mountTranslate, 100);
-        setTimeout(function() { clearInterval(mountTimer); }, 10000);
+        var mountTimer = setInterval(mountTranslate, 150);
+        setTimeout(function() { clearInterval(mountTimer); }, 8000);
 
-        // D. 补全裂开的模板图标
+        // 3. 模板裂图修复
         function fixBrokenImages() {
           var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
           imgs.forEach(function(img) {
@@ -196,9 +186,7 @@
             };
           });
         }
-        var imgObserver = new MutationObserver(fixBrokenImages);
-        imgObserver.observe(document.body, { childList: true, subtree: true });
-        setInterval(fixBrokenImages, 300);
+        setInterval(fixBrokenImages, 500);
       })();
     </script>
   </body>
