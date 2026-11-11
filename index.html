@@ -24,7 +24,7 @@
     <script src="https://res.zvo.cn/translate/translate.js"></script>
 
     <style>
-      /* 1. 彻底封杀安全警告弹窗与横幅 */
+      /* 永久彻底封杀安全警告弹窗与横幅 */
       .legal-disclaimer,
       .legal-dialog-overlay,
       .legal-dialog,
@@ -36,7 +36,7 @@
         pointer-events: none !important;
       }
 
-      /* 2. 屏蔽所有首页废话、原版中间导航、登录按钮、页脚 */
+      /* 屏蔽所有首页废话、原版中间导航、登录按钮、页脚 */
       .nav-links,
       .login-btn,
       .user-actions,
@@ -55,7 +55,7 @@
         display: none !important;
       }
 
-      /* 3. 顶栏排版与自定义首页/语言按钮 */
+      /* 顶栏排版与自定义按钮 */
       .nav-content, header {
         display: flex !important;
         align-items: center !important;
@@ -97,14 +97,53 @@
         border-color: rgba(0, 0, 0, 0.25) !important;
       }
 
-      /* 4. 隐藏第4个软盘图标旁边的 5/5 配额字样 */
+      /* 底部四个操作图标样式 */
+      .canvas-footer {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 12px !important;
+      }
+
+      .canvas-action-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: relative !important;
+      }
+
+      /* 去除第4个软盘图标上的 3/5、5/5 配额数字 */
+      .canvas-action-btn:last-child {
+        font-size: 0 !important;
+        color: transparent !important;
+      }
+      .canvas-action-btn:last-child * {
+        font-size: 18px !important;
+        color: initial !important;
+      }
       .save-count-badge,
       .save-count-small,
-      .canvas-action-btn span,
       [class*="save-count"] {
         display: none !important;
-        font-size: 0 !important;
-        visibility: hidden !important;
+      }
+
+      /* 模板卡片图片完整展示 */
+      .template-preview,
+      .template-preview-small {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: #f8fafc !important;
+        height: 120px !important;
+        overflow: hidden !important;
+      }
+
+      .template-preview img,
+      .template-preview-small img {
+        display: block !important;
+        object-fit: contain !important;
+        width: 100% !important;
+        height: 100% !important;
       }
     </style>
   </head>
@@ -115,7 +154,7 @@
 
     <script>
       (function() {
-        // A. 标题重命名
+        // 1. 标题重命名
         setInterval(function() {
           var logo = document.querySelector('.logo');
           if (logo && logo.textContent !== '印章生成器') {
@@ -123,7 +162,7 @@
           }
         }, 150);
 
-        // B. 挂载自定义翻译菜单和首页按钮
+        // 2. 挂载自定义翻译菜单和首页按钮
         function mountTranslate() {
           if (document.getElementById('lang-dropdown-wrapper')) return;
 
@@ -176,53 +215,75 @@
         var mountTimer = setInterval(mountTranslate, 150);
         setTimeout(function() { clearInterval(mountTimer); }, 8000);
 
-        // C. 只接管图1按钮行为：
-        // 1. 去掉软盘上的 5/5
-        // 2. 第二个按钮点开触发图2（导出图片弹窗）
-        // 3. 第四个按钮点开触发图3（导出模板弹窗）
-        function hookToolButtons() {
-          var actionBtns = document.querySelectorAll('.canvas-footer .canvas-action-btn, .canvas-action-btn');
-          if (!actionBtns || actionBtns.length < 4) return;
+        // 3. 模板原图真实路径回源补全（图4）
+        function restoreTemplateImages() {
+          var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
+          imgs.forEach(function(img) {
+            if (img.dataset.sourceHooked) return;
 
-          // 去除第4个按钮内部文本 (5/5)
-          var fourthBtn = actionBtns[3];
+            img.onerror = function() {
+              if (this.dataset.fallbackDone) return;
+              this.dataset.fallbackDone = "true";
+              var path = this.getAttribute('src') || '';
+              var filename = path.split('/').pop();
+              this.src = 'https://drawstamp.com/assets/' + filename;
+            };
+
+            var curSrc = img.getAttribute('src');
+            if (curSrc && !curSrc.startsWith('http') && !curSrc.startsWith('data:')) {
+              img.dataset.sourceHooked = "true";
+              var clean = curSrc.replace(/^\.\//, '/').replace(/^\/+/, '/');
+              img.src = 'https://drawstamp.com' + clean;
+            }
+          });
+        }
+        setInterval(restoreTemplateImages, 300);
+
+        // 4. 精准接管：调换第二与第四个图标的弹窗绑定
+        function setupActionButtons() {
+          var btns = document.querySelectorAll('.canvas-footer .canvas-action-btn, .canvas-action-btn');
+          if (!btns || btns.length < 4) return;
+
+          // 抹除第4个按钮内部纯文本（去掉 3/5、5/5）
+          var fourthBtn = btns[3];
           if (fourthBtn) {
-            Array.from(fourthBtn.childNodes).forEach(function(node) {
-              if (node.nodeType === Node.TEXT_NODE) {
-                node.textContent = '';
+            Array.from(fourthBtn.childNodes).forEach(function(n) {
+              if (n.nodeType === Node.TEXT_NODE && n.textContent.trim()) {
+                n.textContent = '';
               }
             });
           }
 
-          // 第二个按钮触发图2弹窗
-          var secondBtn = actionBtns[1];
-          if (secondBtn && !secondBtn.dataset.hooked) {
-            secondBtn.dataset.hooked = "true";
-            secondBtn.addEventListener('click', function() {
-              var rawExportImgBtn = document.querySelector('.primary-button') || Array.from(document.querySelectorAll('button')).find(function(b) {
-                return (b.innerText || '').indexOf('导出') !== -1 && (b.innerText || '').indexOf('模板') === -1;
+          // 第二个按钮接管 -> 呼出【导出模板弹窗】
+          var secondBtn = btns[1];
+          if (secondBtn && !secondBtn.dataset.boundAction) {
+            secondBtn.dataset.boundAction = "true";
+            secondBtn.addEventListener('click', function(e) {
+              var rawTplBtn = Array.from(document.querySelectorAll('button')).find(function(b) {
+                var t = (b.innerText || b.textContent || '').trim();
+                return t.indexOf('导出模板') !== -1 && b !== secondBtn;
               });
-              if (rawExportImgBtn && rawExportImgBtn !== secondBtn) {
-                rawExportImgBtn.click();
+              if (rawTplBtn) {
+                rawTplBtn.click();
               }
-            }, true);
+            });
           }
 
-          // 第四个按钮触发图3弹窗
-          if (fourthBtn && !fourthBtn.dataset.hooked) {
-            fourthBtn.dataset.hooked = "true";
-            fourthBtn.addEventListener('click', function() {
-              var rawExportTplBtn = document.querySelector('.save-template-btn') || Array.from(document.querySelectorAll('button')).find(function(b) {
-                return (b.innerText || '').indexOf('导出模板') !== -1;
+          // 第四个按钮接管 -> 呼出【选择导出格式（PNG/JPEG/SVG）弹窗】
+          if (fourthBtn && !fourthBtn.dataset.boundAction) {
+            fourthBtn.dataset.boundAction = "true";
+            fourthBtn.addEventListener('click', function(e) {
+              var rawExportBtn = Array.from(document.querySelectorAll('button')).find(function(b) {
+                var t = (b.innerText || b.textContent || '').trim();
+                return (t === '导出图片' || t === '下载印章' || t === '导出') && b !== fourthBtn;
               });
-              if (rawExportTplBtn && rawExportTplBtn !== fourthBtn) {
-                rawExportTplBtn.click();
+              if (rawExportBtn) {
+                rawExportBtn.click();
               }
-            }, true);
+            });
           }
         }
-
-        setInterval(hookToolButtons, 200);
+        setInterval(setupActionButtons, 200);
       })();
     </script>
   </body>
