@@ -7,7 +7,6 @@
     <title>印章生成器</title>
 
     <script>
-      // 保持停留在 /maker 编辑台
       (function() {
         var p = window.location.pathname;
         if (!p.endsWith('/maker') && !p.endsWith('/maker/')) {
@@ -24,7 +23,7 @@
     <script src="https://res.zvo.cn/translate/translate.js"></script>
 
     <style>
-      /* 永久彻底封杀安全警告弹窗与横幅 */
+      /* 彻底封杀安全警告弹窗与横幅 */
       .legal-disclaimer,
       .legal-dialog-overlay,
       .legal-dialog,
@@ -145,14 +144,181 @@
         width: 100% !important;
         height: 100% !important;
       }
+
+      /* ================= 1:1 复刻弹窗通用容器样式 ================= */
+      .custom-modal-mask {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(0, 0, 0, 0.45) !important;
+        display: none;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 999999 !important;
+      }
+
+      .custom-modal-card {
+        background: #ffffff !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        padding: 24px 32px !important;
+        box-sizing: border-box !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+        color: #333333 !important;
+      }
+
+      .custom-modal-title {
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        color: #e53e3e !important;
+        margin-bottom: 20px !important;
+        text-align: left !important;
+      }
+
+      .custom-modal-btn-row {
+        display: flex !important;
+        justify-content: flex-end !important;
+        gap: 12px !important;
+        margin-top: 24px !important;
+      }
+
+      .custom-btn-cancel {
+        padding: 6px 16px !important;
+        border: 1px solid #d9d9d9 !important;
+        background: #ffffff !important;
+        color: #666666 !important;
+        border-radius: 4px !important;
+        cursor: pointer !important;
+        font-size: 14px !important;
+      }
+      .custom-btn-cancel:hover {
+        border-color: #40a9ff !important;
+        color: #40a9ff !important;
+      }
+
+      .custom-btn-confirm {
+        padding: 6px 20px !important;
+        border: none !important;
+        background: #52c41a !important;
+        color: #ffffff !important;
+        border-radius: 4px !important;
+        cursor: pointer !important;
+        font-size: 14px !important;
+      }
+      .custom-btn-confirm:hover {
+        background: #73d13d !important;
+      }
+
+      /* 图3导出格式卡片单选框 */
+      .format-option-box {
+        display: flex !important;
+        align-items: center !important;
+        border: 1px solid #e8e8e8 !important;
+        border-radius: 6px !important;
+        padding: 10px 16px !important;
+        margin-bottom: 12px !important;
+        cursor: pointer !important;
+        transition: all 0.2s !important;
+      }
+      .format-option-box.active {
+        border-color: #52c41a !important;
+        background-color: #f6ffed !important;
+      }
     </style>
   </head>
   <body>
     <div id="app"></div>
 
+    <!-- ================= 图 2 导出模板弹窗（图1第二个按钮触发） ================= -->
+    <div id="modal-export-template" class="custom-modal-mask">
+      <div class="custom-modal-card" style="width: 500px;">
+        <div class="custom-modal-title">导出模板</div>
+        <div style="margin-bottom: 8px; font-size: 14px; color: #333; text-align: left;">印章类型</div>
+        <input id="input-tpl-type" type="text" style="width: 100%; height: 36px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 0 10px; box-sizing: border-box; outline: none; font-size: 14px;" />
+        <div style="font-size: 12px; color: #8c8c8c; margin-top: 16px; text-align: left;">
+          请输入印章分类 (可填多个，使用空格分隔。例如：书法印章 有机印章 节气)
+        </div>
+        <div class="custom-modal-btn-row">
+          <button id="btn-cancel-tpl" class="custom-btn-cancel" type="button">取消</button>
+          <button id="btn-confirm-tpl" class="custom-btn-confirm" type="button">导出</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= 图 3 选择导出格式弹窗（图1第四个按钮触发） ================= -->
+    <div id="modal-export-img" class="custom-modal-mask">
+      <div class="custom-modal-card" style="width: 520px; max-height: 90vh; overflow-y: auto;">
+        <div class="custom-modal-title">选择导出格式</div>
+        <div style="font-size: 13px; color: #e53e3e; text-align: center; margin-bottom: 16px;">请选择您要导出的图片格式：</div>
+
+        <!-- PNG -->
+        <div class="format-option-box active" onclick="selectImgFmt(this, 'png')">
+          <span style="font-size: 20px; margin-right: 12px;">🖼️</span>
+          <span style="font-weight: 600; width: 60px; font-size: 14px; text-align: left;">PNG</span>
+          <span style="font-size: 12px; color: #8c8c8c;">支持透明背景，适合打印</span>
+        </div>
+
+        <!-- JPEG -->
+        <div class="format-option-box" onclick="selectImgFmt(this, 'jpeg')">
+          <span style="font-size: 20px; margin-right: 12px;">📷</span>
+          <span style="font-weight: 600; width: 60px; font-size: 14px; text-align: left;">JPEG</span>
+          <span style="font-size: 12px; color: #8c8c8c;">文件较小，适合网络分享</span>
+        </div>
+
+        <!-- SVG -->
+        <div class="format-option-box" onclick="selectImgFmt(this, 'svg')">
+          <span style="font-size: 20px; margin-right: 12px;">📐</span>
+          <span style="font-weight: 600; width: 60px; font-size: 14px; text-align: left;">SVG</span>
+          <span style="font-size: 12px; color: #8c8c8c;">矢量格式，可无损缩放</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; margin-bottom: 10px;">
+          <span style="font-size: 14px; font-weight: 600;">导出尺寸</span>
+          <span style="font-size: 12px; color: #52c41a; cursor: pointer;" onclick="document.getElementById('input-img-w').value=420;document.getElementById('input-img-h').value=420;">恢复默认尺寸</span>
+        </div>
+
+        <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 12px;">
+          <button type="button" class="custom-btn-cancel" style="padding: 4px 10px; font-size: 12px; border-color: #52c41a; color: #52c41a;">原始比例</button>
+          <button type="button" class="custom-btn-cancel" style="padding: 4px 10px; font-size: 12px;">正方形</button>
+          <button type="button" class="custom-btn-cancel" style="padding: 4px 10px; font-size: 12px;">4:3</button>
+          <button type="button" class="custom-btn-cancel" style="padding: 4px 10px; font-size: 12px;">16:9</button>
+          <button type="button" class="custom-btn-cancel" style="padding: 4px 10px; font-size: 12px;">自定义</button>
+        </div>
+
+        <div style="display: flex; gap: 16px; justify-content: center; align-items: center; margin-top: 10px;">
+          <div style="text-align: center;">
+            <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 4px;">宽度 (px)</div>
+            <input id="input-img-w" type="number" value="420" style="width: 100px; height: 32px; text-align: center; border: 1px solid #d9d9d9; border-radius: 4px;" />
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 12px; color: #8c8c8c; margin-bottom: 4px;">高度 (px)</div>
+            <input id="input-img-h" type="number" value="420" style="width: 100px; height: 32px; text-align: center; border: 1px solid #d9d9d9; border-radius: 4px;" />
+          </div>
+        </div>
+
+        <div style="font-size: 12px; color: #fa8c16; text-align: center; margin-top: 12px;">默认尺寸：420px × 420px</div>
+        <div style="font-size: 12px; color: #8c8c8c; text-align: center; margin-top: 4px;">支持 100px - 4096px 范围</div>
+
+        <div class="custom-modal-btn-row">
+          <button id="btn-cancel-img" class="custom-btn-cancel" type="button">取消</button>
+          <button id="btn-confirm-img" class="custom-btn-confirm" type="button">导出</button>
+        </div>
+      </div>
+    </div>
+
     <script type="module" crossorigin src="./index-BeSQZLB_.js"></script>
 
     <script>
+      // 导出格式单选切换
+      window.curFmt = 'png';
+      window.selectImgFmt = function(el, fmt) {
+        document.querySelectorAll('.format-option-box').forEach(function(b) { b.classList.remove('active'); });
+        el.classList.add('active');
+        window.curFmt = fmt;
+      };
+
       (function() {
         // 1. 标题重命名
         setInterval(function() {
@@ -162,10 +328,9 @@
           }
         }, 150);
 
-        // 2. 挂载自定义翻译菜单和首页按钮
+        // 2. 自定义翻译菜单和首页按钮
         function mountTranslate() {
           if (document.getElementById('lang-dropdown-wrapper')) return;
-
           var navContainer = document.querySelector('.nav-content') || document.querySelector('.navbar') || document.querySelector('header');
           if (!navContainer) return;
 
@@ -211,16 +376,14 @@
             menu.style.display = 'none';
           };
         }
-
         var mountTimer = setInterval(mountTranslate, 150);
         setTimeout(function() { clearInterval(mountTimer); }, 8000);
 
-        // 3. 模板原图真实路径回源补全（图4）
+        // 3. 模板真图拉取（保持图4原貌）
         function restoreTemplateImages() {
           var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
           imgs.forEach(function(img) {
             if (img.dataset.sourceHooked) return;
-
             img.onerror = function() {
               if (this.dataset.fallbackDone) return;
               this.dataset.fallbackDone = "true";
@@ -239,12 +402,43 @@
         }
         setInterval(restoreTemplateImages, 300);
 
-        // 4. 精准接管：调换第二与第四个图标的弹窗绑定
+        // 4. 精准接管弹窗与关闭事件
+        var modalTpl = document.getElementById('modal-export-template');
+        var modalImg = document.getElementById('modal-export-img');
+
+        document.getElementById('btn-cancel-tpl').onclick = function() { modalTpl.style.display = 'none'; };
+        document.getElementById('btn-cancel-img').onclick = function() { modalImg.style.display = 'none'; };
+
+        modalTpl.onclick = function(e) { if (e.target === modalTpl) modalTpl.style.display = 'none'; };
+        modalImg.onclick = function(e) { if (e.target === modalImg) modalImg.style.display = 'none'; };
+
+        // 导出动作执行
+        document.getElementById('btn-confirm-tpl').onclick = function() {
+          var val = document.getElementById('input-tpl-type').value.trim() || '印章模板';
+          var rawBtn = Array.from(document.querySelectorAll('button')).find(function(b) {
+            return (b.innerText || '').indexOf('导出模板') !== -1;
+          });
+          if (rawBtn) rawBtn.click();
+          modalTpl.style.display = 'none';
+        };
+
+        document.getElementById('btn-confirm-img').onclick = function() {
+          var canvas = document.querySelector('canvas');
+          if (canvas) {
+            var link = document.createElement('a');
+            link.download = '印章.' + (window.curFmt || 'png');
+            link.href = canvas.toDataURL(window.curFmt === 'jpeg' ? 'image/jpeg' : 'image/png');
+            link.click();
+          }
+          modalImg.style.display = 'none';
+        };
+
+        // 5. 绑定图1底部的4个图标
         function setupActionButtons() {
           var btns = document.querySelectorAll('.canvas-footer .canvas-action-btn, .canvas-action-btn');
           if (!btns || btns.length < 4) return;
 
-          // 抹除第4个按钮内部纯文本（去掉 3/5、5/5）
+          // 彻底抹除第4个按钮内部配额数字 (3/5、5/5)
           var fourthBtn = btns[3];
           if (fourthBtn) {
             Array.from(fourthBtn.childNodes).forEach(function(n) {
@@ -254,35 +448,28 @@
             });
           }
 
-          // 第二个按钮接管 -> 呼出【导出模板弹窗】
+          // 第二个按钮点击 -> 准确打开 图 2 导出模板弹窗
           var secondBtn = btns[1];
           if (secondBtn && !secondBtn.dataset.boundAction) {
             secondBtn.dataset.boundAction = "true";
-            secondBtn.addEventListener('click', function(e) {
-              var rawTplBtn = Array.from(document.querySelectorAll('button')).find(function(b) {
-                var t = (b.innerText || b.textContent || '').trim();
-                return t.indexOf('导出模板') !== -1 && b !== secondBtn;
-              });
-              if (rawTplBtn) {
-                rawTplBtn.click();
-              }
-            });
+            secondBtn.onclick = function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              modalTpl.style.display = 'flex';
+            };
           }
 
-          // 第四个按钮接管 -> 呼出【选择导出格式（PNG/JPEG/SVG）弹窗】
+          // 第四个按钮点击 -> 准确打开 图 3 选择导出格式弹窗
           if (fourthBtn && !fourthBtn.dataset.boundAction) {
             fourthBtn.dataset.boundAction = "true";
-            fourthBtn.addEventListener('click', function(e) {
-              var rawExportBtn = Array.from(document.querySelectorAll('button')).find(function(b) {
-                var t = (b.innerText || b.textContent || '').trim();
-                return (t === '导出图片' || t === '下载印章' || t === '导出') && b !== fourthBtn;
-              });
-              if (rawExportBtn) {
-                rawExportBtn.click();
-              }
-            });
+            fourthBtn.onclick = function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              modalImg.style.display = 'flex';
+            };
           }
         }
+
         setInterval(setupActionButtons, 200);
       })();
     </script>
