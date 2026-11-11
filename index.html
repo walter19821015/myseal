@@ -579,21 +579,100 @@
           popupTpl.style.display = 'none';
         };
 
-        // 导出图片执行
-document.getElementById('btn-do-exp-action').onclick = function() {
-          popupExp.style.display = 'none';
-          var realBtn = document.querySelector('.confirm-button');
-          if (realBtn) {
-            realBtn.click();
-          }
-        };
+// 导出图片执行：自动剔除标尺与外框，只导出纯净印章
+          document.getElementById('btn-do-exp-action').onclick = function() {
+            popupExp.style.display = 'none';
 
-        // 5. 绑定图1操作台按钮事件
-        function bindAllActionButtons() {
-          var btns = document.querySelectorAll('.canvas-footer .canvas-action-btn, .canvas-action-btn');
-          if (!btns || btns.length < 4) return;
+            var targetW = parseInt(document.getElementById('dyn-inp-w')?.value || 420);
+            var targetH = parseInt(document.getElementById('dyn-inp-h')?.value || 320);
+            var fmt = window.curFormat || 'png';
+            var quality = parseInt(document.getElementById('quality-slider')?.value || 70) / 100;
 
-// A. 处理第4个软盘图标：解除置灰，并点击直接唤起原版无标尺弹窗
+            // 获取页面中间的核心画板
+            var canvases = Array.from(document.querySelectorAll('canvas'));
+            var mainCanvas = canvases.find(function(c) {
+              return c.width > 200 && c.height > 200;
+            }) || canvases[0];
+
+            if (!mainCanvas) {
+              alert('未找到画布');
+              return;
+            }
+
+            // 标尺区域安全切除范围（切掉四周35像素的刻度尺）
+            var rulerSize = 35;
+            var srcW = mainCanvas.width;
+            var srcH = mainCanvas.height;
+
+            var tempCvs = document.createElement('canvas');
+            tempCvs.width = srcW;
+            tempCvs.height = srcH;
+            var tempCtx = tempCvs.getContext('2d');
+            tempCtx.drawImage(mainCanvas, 0, 0);
+
+            var imgData = tempCtx.getImageData(0, 0, srcW, srcH).data;
+            var minX = srcW, minY = srcH, maxX = 0, maxY = 0;
+            var found = false;
+
+            // 扫描有效印章像素区域
+            for (var y = rulerSize; y < srcH; y++) {
+              for (var x = rulerSize; x < srcW; x++) {
+                var idx = (y * srcW + x) * 4;
+                var r = imgData[idx];
+                var g = imgData[idx + 1];
+                var b = imgData[idx + 2];
+                var a = imgData[idx + 3];
+
+                if (a > 40 && !(r > 240 && g > 240 && b > 240)) {
+                  if (x < minX) minX = x;
+                  if (x > maxX) maxX = x;
+                  if (y < minY) minY = y;
+                  if (y > maxY) maxY = y;
+                  found = true;
+                }
+              }
+            }
+
+            var cropX, cropY, cropW, cropH;
+            if (found && maxX > minX && maxY > minY) {
+              var padding = 10;
+              cropX = Math.max(rulerSize, minX - padding);
+              cropY = Math.max(rulerSize, minY - padding);
+              cropW = Math.min(srcW - cropX, (maxX - minX) + padding * 2);
+              cropH = Math.min(srcH - cropY, (maxY - minY) + padding * 2);
+            } else {
+              cropX = rulerSize;
+              cropY = rulerSize;
+              cropW = srcW - rulerSize;
+              cropH = srcH - rulerSize;
+            }
+
+            // 输出纯净印章目标画布
+            var outCanvas = document.createElement('canvas');
+            outCanvas.width = targetW;
+            outCanvas.height = targetH;
+            var ctx = outCanvas.getContext('2d');
+
+            if (fmt === 'jpeg') {
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, targetW, targetH);
+            }
+
+            var scale = Math.min(targetW / cropW, targetH / cropH);
+            var dw = cropW * scale;
+            var dh = cropH * scale;
+            var dx = (targetW - dw) / 2;
+            var dy = (targetH - dh) / 2;
+
+            ctx.drawImage(mainCanvas, cropX, cropY, cropW, cropH, dx, dy, dw, dh);
+
+            var link = document.createElement('a');
+            link.download = '印章.' + fmt;
+            link.href = outCanvas.toDataURL(fmt === 'jpeg' ? 'image/jpeg' : 'image/png', quality);
+            link.click();
+          };
+
+          // A. 处理第4个软盘图标：彻底解除置灰，点击立刻呼出导出设置弹窗
           var fourthBtn = btns[3];
           if (fourthBtn) {
             fourthBtn.removeAttribute('disabled');
@@ -609,19 +688,7 @@ document.getElementById('btn-do-exp-action').onclick = function() {
             fourthBtn.onclick = function(e) {
               e.preventDefault();
               e.stopPropagation();
-
-              // 找到已存在于 DOM 中的原版导出弹窗并置顶显示
-              var diag = document.querySelector('.dialog-buttons');
-              if (diag) {
-                var p = diag.parentElement;
-                while (p && p !== document.body) {
-                  p.style.display = 'flex';
-                  p.style.visibility = 'visible';
-                  p.style.opacity = '1';
-                  p.style.zIndex = '999999';
-                  p = p.parentElement;
-                }
-              }
+              popupExp.style.display = 'flex';
             };
           }
 
