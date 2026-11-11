@@ -4,11 +4,66 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="./logo64.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DrawStamp - 印章制作工具</title>
+    <title>印章制作工具</title>
     <link rel="stylesheet" crossorigin href="./index-B9o7yvK4.css">
-    <script type="module" crossorigin src="./index-BeSQZLB_.js"></script>
+    <script>
+      // 1. 在 Vue 框架初始化路由前，直接强制修正底层路由为编辑器界面
+      (function() {
+        if (!location.pathname.endsWith('/maker') && !location.pathname.endsWith('/maker/')) {
+          var target = location.pathname.replace(/\/$/, '') + '/maker';
+          window.history.replaceState(null, '', target);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>
+    <script type="module" crossorigin src="./index-BeSQZLB_.js"></script>
+
+    <script>
+      // 2. 物理节点彻底销毁器：一旦检测到目标元素，直接从 DOM 树彻底 remove()
+      (function() {
+        function removeUnwantedNodes() {
+          // A. 物理销毁顶部的：“首页”、“关于我们”、“联系我们”、“登录”
+          var headerItems = document.querySelectorAll('header a, header button, nav a, nav button');
+          headerItems.forEach(function(el) {
+            var txt = (el.innerText || el.textContent || '').trim();
+            if (txt === '首页' || txt === '关于我们' || txt === '联系我们' || txt === '登录') {
+              el.remove(); // 物理删除
+            }
+          });
+
+          // B. 物理销毁底部的整个深灰栏（包括版权、快速链接、法律信息、重要提示）
+          var footers = document.querySelectorAll('footer');
+          footers.forEach(function(el) {
+            el.remove(); // 物理删除
+          });
+
+          // 针对非标准 footer 标签的底部容器进行深度遍历匹配删除
+          var allDivs = document.querySelectorAll('div');
+          allDivs.forEach(function(el) {
+            var txt = el.innerText || '';
+            if (
+              (txt.includes('DrawStamp. 保留所有权利') || txt.includes('严禁用于任何非法用途')) &&
+              el.children.length > 0 &&
+              !el.querySelector('#app')
+            ) {
+              el.remove(); // 物理删除
+            }
+          });
+        }
+
+        // 监听 DOM 树变化，实时清除
+        var observer = new MutationObserver(removeUnwantedNodes);
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        // 挂载执行并保留短时间兜底
+        removeUnwantedNodes();
+        var timer = setInterval(removeUnwantedNodes, 200);
+        setTimeout(function() {
+          clearInterval(timer);
+        }, 8000);
+      })();
+    </script>
   </body>
 </html>
