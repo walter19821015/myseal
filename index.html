@@ -1,56 +1,129 @@
 <!doctype html>
 <html lang="zh-CN">
   <script>
-      // 进站自动直达印章制作台
-      (function() {
-        var timer = setInterval(function() {
-          var elements = Array.from(document.querySelectorAll('a, button, span, div'));
-          var btn = elements.find(function(el) {
-            return el.textContent && el.textContent.trim() === '印章模板';
-          });
-          if (btn) {
-            btn.click();
-            clearInterval(timer);
+    // 1. 进站自动直达制作台
+    (function() {
+      var timer = setInterval(function() {
+        var elements = Array.from(document.querySelectorAll('a, button, span, div'));
+        var btn = elements.find(function(el) {
+          return el.textContent && el.textContent.trim() === '印章模板';
+        });
+        if (btn) {
+          btn.click();
+          clearInterval(timer);
+        }
+      }, 30);
+      setTimeout(function() { clearInterval(timer); }, 6000);
+    })();
+
+    // 2. 页面元素物理删除与替换（完全不触碰、不拦截底部导出逻辑）
+    (function() {
+      var cleanTimer = setInterval(function() {
+        // A. 第一点需求：修复缩略图裂开
+        var imgs = document.querySelectorAll('img');
+        imgs.forEach(function(img) {
+          if (!img.dataset.fixedError) {
+            img.dataset.fixedError = "true";
+            img.onerror = function() {
+              this.src = './logo64.png';
+              this.style.objectFit = 'contain';
+            };
+            if (img.complete && img.naturalWidth === 0) {
+              img.src = './logo64.png';
+              img.style.objectFit = 'contain';
+            }
           }
-        }, 30);
-        setTimeout(function() { clearInterval(timer); }, 6000);
-      })();
-    </script>
+        });
+
+        // B. 第二点需求：彻底删除底部所有的东西（非隐藏，直接物理 remove 节点）
+        var footers = document.querySelectorAll('footer, .footer, [class*="footer-wrapper"], [class*="bottom-bar"]');
+        footers.forEach(function(f) {
+          f.remove();
+        });
+
+        // C. 第三点需求：最顶部栏改造
+        var header = document.querySelector('header, nav, .header, .navbar');
+        if (header) {
+          // 1. 左侧英文 DrawStamp 改为 图章生成器
+          var textNodes = header.querySelectorAll('*');
+          textNodes.forEach(function(el) {
+            if (el.children.length === 0 && el.textContent && el.textContent.trim() === 'DrawStamp') {
+              el.textContent = '图章生成器';
+            }
+          });
+
+          // 2. 中间导航全部物理删除（首页、印章模板、关于我们、联系我们）
+          // 3. 右侧原作者的登录和 Language 选择器全部物理删除
+          var toRemoveItems = header.querySelectorAll('a, button, div, span, select');
+          toRemoveItems.forEach(function(el) {
+            var txt = el.textContent ? el.textContent.trim() : '';
+            // 中间项
+            if (['首页', '印章模板', '关于我们', '联系我们', '登录'].indexOf(txt) !== -1) {
+              el.remove();
+            }
+            // 右侧作者自带的语言选择框容器
+            if (el.classList.contains('language-select') || (txt.indexOf('Language') !== -1 && el.tagName === 'DIV')) {
+              el.remove();
+            }
+          });
+
+          // 4. 换上我们的主页与翻译组件
+          if (!document.getElementById('my-header-tools')) {
+            var toolsBox = document.createElement('div');
+            toolsBox.id = 'my-header-tools';
+            toolsBox.style.cssText = 'display: flex; align-items: center; gap: 15px; margin-left: auto; z-index: 1000;';
+
+            // 我们的主页链接
+            var homeLink = document.createElement('a');
+            homeLink.href = 'https://walter19821015.ccwu.cc';
+            homeLink.textContent = '返回主页';
+            homeLink.style.cssText = 'color: #007bff; text-decoration: none; font-size: 14px; font-weight: 500; cursor: pointer;';
+
+            // 我们的翻译容器（translate.js 挂载点）
+            var transBox = document.createElement('div');
+            transBox.id = 'translate';
+            transBox.style.cssText = 'display: inline-block;';
+
+            toolsBox.appendChild(homeLink);
+            toolsBox.appendChild(transBox);
+            header.appendChild(toolsBox);
+
+            // 触发翻译组件渲染
+            if (window.translate && window.translate.render) {
+              window.translate.render();
+            }
+          }
+        }
+      }, 200);
+
+      // 运行 10 秒后自动停止轮询，完全释放内存与浏览器性能
+      setTimeout(function() { clearInterval(cleanTimer); }, 10000);
+    })();
+  </script>
+
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="logo64.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <!-- SEO Meta Tags -->
-    <title>DrawStamp - 在线电子印章制作工具 | 免费印章生成器</title>
-    <meta name="description" content="DrawStamp 是一个专业的在线电子印章制作工具，支持自定义设计、多种模板、防伪效果等功能。完全免费使用，所有处理在本地完成，保护您的隐私安全。" />
-    <meta name="keywords" content="电子印章,印章制作,印章生成器,电子印章生成,在线印章,印章设计,DrawStamp" />
-    <meta name="author" content="DrawStamp" />
-    <meta name="robots" content="index, follow" />
+    <title>图章生成器 - 在线电子印章制作工具</title>
+    <meta name="description" content="DrawStamp 是一个专业的在线电子印章制作工具，支持自定义设计、多种模板、防伪效果等功能。" />
     
-    <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="DrawStamp - 在线电子印章制作工具" />
-    <meta property="og:description" content="专业的在线电子印章制作工具，支持自定义设计、多种模板、防伪效果等功能。" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="/logo128.png" />
-    
-    <!-- Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="DrawStamp - 在线电子印章制作工具" />
-    <meta name="twitter:description" content="专业的在线电子印章制作工具，支持自定义设计、多种模板、防伪效果等功能。" />
-    
-    <!-- Language -->
-    <meta http-equiv="content-language" content="zh-CN" />
-    
-    <!-- Theme Color -->
-    <meta name="theme-color" content="#007bff" />
-    <!-- umani stats -->
+    <!-- 引入我们的全局翻译引擎脚本 -->
+    <script src="https://cdn.staticfile.net/translate.js/3.5.2/translate.js"></script>
+    <script>
+      translate.language.setLocal('chinese_simplified');
+      translate.service.use('client.edge');
+    </script>
+
+    <!-- 原版系统核心脚本与样式 -->
     <script defer src="https://cloud.umami.is/script.js" data-website-id="51ef2aef-2499-463f-86f2-1a0b8d545263"></script>
     <script type="module" crossorigin src="./index-BeSQZLB_.js"></script>
     <link rel="stylesheet" crossorigin href="./index-B9o7yvK4.css">
   </head>
   <body>
     <div id="app"></div>
-
-  <!-- Cloudflare Pages Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2049f8587d1c4501b6d9dee0dbd3407c"}'></script><!-- Cloudflare Pages Analytics --></body>
+    <!-- Cloudflare Pages Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2049f8587d1c4501b6d9dee0dbd3407c"}'></script>
+  </body>
 </html>
