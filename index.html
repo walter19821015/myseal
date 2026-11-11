@@ -1,5 +1,21 @@
 <!doctype html>
 <html lang="zh-CN">
+  <script>
+      // 进站自动直达印章制作台
+      (function() {
+        var timer = setInterval(function() {
+          var elements = Array.from(document.querySelectorAll('a, button, span, div'));
+          var btn = elements.find(function(el) {
+            return el.textContent && el.textContent.trim() === '印章模板';
+          });
+          if (btn) {
+            btn.click();
+            clearInterval(timer);
+          }
+        }, 30);
+        setTimeout(function() { clearInterval(timer); }, 6000);
+      })();
+    </script>
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="logo64.png" />
