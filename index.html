@@ -7,7 +7,6 @@
     <title>印章生成器</title>
 
     <script>
-      // 保持停留在 /maker 编辑台
       (function() {
         var p = window.location.pathname;
         if (!p.endsWith('/maker') && !p.endsWith('/maker/')) {
@@ -97,7 +96,7 @@
         border-color: rgba(0, 0, 0, 0.25) !important;
       }
 
-      /* 图1底部操作图标容器与显示保证 */
+      /* 底部操作图标容器与显示保证 */
       .canvas-footer {
         display: flex !important;
         align-items: center !important;
@@ -140,243 +139,174 @@
         height: 100% !important;
       }
 
-      /* ================= 像素级对齐图 2 & 图 4 弹窗样式 ================= */
-      .native-modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.45);
+      /* ================= 严格复刻图 2 弹窗 ================= */
+      #target-export-popup-mask {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(0, 0, 0, 0.45) !important;
         display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999999;
+        align-items: center !important;
+        justify-content: center !important;
+        z-index: 2147483647 !important;
       }
 
-      .native-modal-window {
-        background: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-        box-sizing: border-box;
-        font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      #target-export-popup-body {
+        background: #ffffff !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+        width: 530px !important;
+        max-width: 95vw !important;
+        padding: 24px 28px !important;
+        box-sizing: border-box !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif !important;
       }
 
-      /* 图2：导出模板弹窗样式 */
-      .tpl-modal-box {
-        width: 540px;
-        padding: 24px 28px;
-      }
-      .tpl-modal-title {
-        color: #e53e3e;
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 20px;
-        text-align: left;
-      }
-      .tpl-modal-center-label {
-        font-size: 13px;
-        color: #333333;
-        text-align: center;
-        margin-bottom: 10px;
-      }
-      .tpl-input-field {
-        width: 100%;
-        height: 38px;
-        border: 1px solid #3b82f6;
-        border-radius: 6px;
-        padding: 0 12px;
-        font-size: 14px;
-        box-sizing: border-box;
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
-      }
-      .tpl-input-field-gray {
-        width: 100%;
-        height: 38px;
-        border: 1px solid #d9d9d9;
-        border-radius: 6px;
-        padding: 0 12px;
-        font-size: 13px;
-        box-sizing: border-box;
-        outline: none;
-        color: #666666;
-      }
-      .tpl-input-field-gray::placeholder {
-        color: #bfbfbf;
+      .ep-title {
+        color: #e53e3e !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        margin-bottom: 14px !important;
+        text-align: left !important;
       }
 
-      /* 图4：选择导出格式弹窗样式 */
-      .fmt-modal-box {
-        width: 530px;
-        padding: 24px 28px;
-        max-height: 90vh;
-        overflow-y: auto;
-      }
-      .fmt-modal-title {
-        color: #e53e3e;
-        font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 12px;
-        text-align: left;
-      }
-      .fmt-header-tip {
-        color: #e53e3e;
-        font-size: 13px;
-        text-align: center;
-        margin-bottom: 14px;
-      }
-      .fmt-option-card {
-        display: flex;
-        align-items: center;
-        border: 1px solid #e5e7eb;
-        border-radius: 6px;
-        padding: 10px 14px;
-        margin-bottom: 10px;
-        cursor: pointer;
-      }
-      .fmt-option-card.active {
-        border-color: #52c41a;
-        background: #f6ffed;
-      }
-      .fmt-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 28px;
-        height: 28px;
-        border-radius: 4px;
-        margin-right: 12px;
-        font-weight: bold;
-      }
-      .ratio-btn {
-        padding: 4px 10px;
-        font-size: 12px;
-        border: 1px solid #d9d9d9;
-        border-radius: 4px;
-        background: #ffffff;
-        cursor: pointer;
-        color: #595959;
-      }
-      .ratio-btn.active {
-        border-color: #52c41a;
-        color: #52c41a;
+      .ep-header-sub {
+        color: #e53e3e !important;
+        font-size: 13px !important;
+        text-align: center !important;
+        margin-bottom: 16px !important;
       }
 
-      /* 统一按钮区 */
-      .modal-footer-btns {
-        display: flex;
-        justify-content: flex-end;
-        gap: 12px;
-        margin-top: 24px;
+      .ep-card {
+        display: flex !important;
+        align-items: center !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 6px !important;
+        padding: 10px 14px !important;
+        margin-bottom: 12px !important;
+        cursor: pointer !important;
+        background: #ffffff !important;
+        box-sizing: border-box !important;
       }
-      .btn-tpl-cancel {
-        padding: 6px 18px;
-        background: #f5f5f5;
-        border: 1px solid #d9d9d9;
-        color: #595959;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 13px;
+      .ep-card.active {
+        border-color: #52c41a !important;
+        background: #f6ffed !important;
       }
-      .btn-tpl-confirm {
-        padding: 6px 20px;
-        background: #52c41a;
-        border: none;
-        color: #ffffff;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 13px;
+
+      .ep-badge-icon {
+        width: 32px !important;
+        height: 32px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 20px !important;
+        margin-right: 12px !important;
       }
-      .btn-tpl-confirm:hover {
-        background: #73d13d;
+
+      .ep-label-txt {
+        font-weight: 600 !important;
+        width: 56px !important;
+        font-size: 14px !important;
+        color: #1f2937 !important;
+        text-align: left !important;
+      }
+
+      .ep-desc-txt {
+        font-size: 12px !important;
+        color: #595959 !important;
+      }
+
+      .ep-capsule-btn {
+        padding: 4px 12px !important;
+        font-size: 12px !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 14px !important;
+        background: #ffffff !important;
+        cursor: pointer !important;
+        color: #595959 !important;
+      }
+      .ep-capsule-btn.active {
+        border-color: #52c41a !important;
+        color: #52c41a !important;
+      }
+
+      .ep-input-num {
+        width: 120px !important;
+        height: 32px !important;
+        text-align: center !important;
+        border: 1px solid #d9d9d9 !important;
+        border-radius: 4px !important;
+        outline: none !important;
+        font-size: 13px !important;
       }
     </style>
   </head>
   <body>
     <div id="app"></div>
 
-    <!-- ================= 图 2 导出模板弹窗（图1第一个上箭头图标触发） ================= -->
-    <div id="popup-template-dialog" class="native-modal-overlay">
-      <div class="native-modal-window tpl-modal-box">
-        <div class="tpl-modal-title">导出模板</div>
-        
-        <div class="tpl-modal-center-label">请输入印章模板标题</div>
-        <input id="custom-tpl-title" type="text" class="tpl-input-field" value="印章类型" />
-
-        <div class="tpl-modal-center-label" style="margin-top: 18px;">
-          请输入印章分类 (可填多个，使用空格分隔，例如：书法印章 有机印章 节气)
-        </div>
-        <input id="custom-tpl-tags" type="text" class="tpl-input-field-gray" placeholder="请输入印章分类 (可填多个，使用空格分隔，例如：书法印章 有机印章 节气)" />
-
-        <div class="modal-footer-btns">
-          <button id="btn-close-tpl" type="button" class="btn-tpl-cancel">取消</button>
-          <button id="btn-save-tpl-action" type="button" class="btn-tpl-confirm">导出</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ================= 图 4 选择导出格式弹窗（图3第四个软盘图标触发） ================= -->
-    <div id="popup-export-dialog" class="native-modal-overlay">
-      <div class="native-modal-window fmt-modal-box">
-        <div class="fmt-modal-title">选择导出格式</div>
-        <div class="fmt-header-tip">请选择您要导出的图片格式：</div>
+    <!-- ================= 严格 1:1 复制图 2 截图的弹窗 ================= -->
+    <div id="target-export-popup-mask">
+      <div id="target-export-popup-body">
+        <div class="ep-title">选择导出格式</div>
+        <div class="ep-header-sub">请选择您要导出的图片格式：</div>
 
         <!-- PNG -->
-        <div class="fmt-option-card active" onclick="switchExportFormat(this, 'png')">
-          <span class="fmt-badge" style="background:#e6f7ff;color:#1890ff;">🖼️</span>
-          <span style="font-weight:600;width:60px;font-size:14px;text-align:left;">PNG</span>
-          <span style="font-size:12px;color:#8c8c8c;">支持透明背景，适合打印</span>
+        <div class="ep-card active" onclick="setExportFormat(this, 'png')">
+          <div class="ep-badge-icon">🖼️</div>
+          <div class="ep-label-txt">PNG</div>
+          <div class="ep-desc-txt">支持透明背景，适合打印</div>
         </div>
 
         <!-- JPEG -->
-        <div class="fmt-option-card" onclick="switchExportFormat(this, 'jpeg')">
-          <span class="fmt-badge" style="background:#fffbe6;color:#faad14;">📷</span>
-          <span style="font-weight:600;width:60px;font-size:14px;text-align:left;">JPEG</span>
-          <span style="font-size:12px;color:#8c8c8c;">文件较小，适合网络分享</span>
+        <div class="ep-card" onclick="setExportFormat(this, 'jpeg')">
+          <div class="ep-badge-icon">📷</div>
+          <div class="ep-label-txt">JPEG</div>
+          <div class="ep-desc-txt">文件较小，适合网络分享</div>
         </div>
 
         <!-- SVG -->
-        <div class="fmt-option-card" onclick="switchExportFormat(this, 'svg')">
-          <span class="fmt-badge" style="background:#f6ffed;color:#52c41a;">📐</span>
-          <span style="font-weight:600;width:60px;font-size:14px;text-align:left;">SVG</span>
-          <span style="font-size:12px;color:#8c8c8c;">矢量格式，可无损缩放</span>
+        <div class="ep-card" onclick="setExportFormat(this, 'svg')">
+          <div class="ep-badge-icon">📐</div>
+          <div class="ep-label-txt">SVG</div>
+          <div class="ep-desc-txt">矢量格式，可无损缩放</div>
         </div>
 
-        <!-- 导出尺寸 -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;margin-bottom:8px;">
-          <span style="font-size:13px;font-weight:600;">导出尺寸</span>
-          <span style="font-size:12px;color:#52c41a;cursor:pointer;" onclick="resetDefaultSize()">恢复默认尺寸</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;margin-bottom:8px;">
+          <span style="font-size:13px;font-weight:600;color:#1f2937;">导出尺寸</span>
+          <span style="font-size:12px;color:#52c41a;cursor:pointer;" onclick="restoreSize()">恢复默认尺寸</span>
         </div>
 
-        <!-- 比例切换 -->
-        <div style="text-align:center;font-size:12px;color:#8c8c8c;margin-bottom:8px;">选择固定宽高比，或使用自定义尺寸</div>
-        <div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px;">
-          <button type="button" class="ratio-btn active">原始比例</button>
-          <button type="button" class="ratio-btn">正方形</button>
-          <button type="button" class="ratio-btn">4:3</button>
-          <button type="button" class="ratio-btn">16:9</button>
-          <button type="button" class="ratio-btn">自定义</button>
+        <div style="text-align:center;font-size:13px;font-weight:600;color:#1f2937;margin-bottom:8px;">固定比例</div>
+
+        <div style="display:flex;gap:8px;justify-content:center;margin-bottom:8px;">
+          <button type="button" class="ep-capsule-btn active">原始比例</button>
+          <button type="button" class="ep-capsule-btn">正方形</button>
+          <button type="button" class="ep-capsule-btn">4:3</button>
+          <button type="button" class="ep-capsule-btn">16:9</button>
+          <button type="button" class="ep-capsule-btn">自定义</button>
         </div>
 
-        <!-- 宽高输入 -->
+        <div style="text-align:center;font-size:12px;color:#e53e3e;margin-bottom:10px;">选择固定宽高比，或使用自定义尺寸</div>
+
         <div style="display:flex;gap:18px;justify-content:center;align-items:center;">
           <div style="text-align:center;">
-            <div style="font-size:12px;color:#8c8c8c;margin-bottom:4px;">宽度 (px)</div>
-            <input id="input-exp-w" type="number" value="420" style="width:100px;height:32px;text-align:center;border:1px solid #d9d9d9;border-radius:4px;outline:none;" />
+            <div style="font-size:12px;color:#595959;margin-bottom:4px;">宽度 (px)</div>
+            <input id="target-inp-w" type="number" value="420" class="ep-input-num" />
           </div>
           <div style="text-align:center;">
-            <div style="font-size:12px;color:#8c8c8c;margin-bottom:4px;">高度 (px)</div>
-            <input id="input-exp-h" type="number" value="420" style="width:100px;height:32px;text-align:center;border:1px solid #d9d9d9;border-radius:4px;outline:none;" />
+            <div style="font-size:12px;color:#595959;margin-bottom:4px;">高度 (px)</div>
+            <input id="target-inp-h" type="number" value="320" class="ep-input-num" />
           </div>
         </div>
 
-        <div style="font-size:12px;color:#fa8c16;text-align:center;margin-top:10px;">默认尺寸：420px × 420px</div>
-        <div style="font-size:12px;color:#8c8c8c;text-align:center;margin-top:2px;">支持 100px - 4096px 范围</div>
+        <div style="font-size:12px;color:#e53e3e;text-align:center;margin-top:10px;">默认尺寸：420px × 320px</div>
+        <div style="font-size:12px;color:#e53e3e;text-align:center;margin-top:2px;">支持 100px - 4096px 范围</div>
 
-        <div class="modal-footer-btns">
-          <button id="btn-close-exp" type="button" class="btn-tpl-cancel">取消</button>
-          <button id="btn-do-exp-action" type="button" class="btn-tpl-confirm">导出</button>
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
+          <button id="ep-btn-cancel" type="button" style="padding:6px 18px;background:#f5f5f5;border:1px solid #d9d9d9;color:#595959;border-radius:4px;cursor:pointer;font-size:13px;">取消</button>
+          <button id="ep-btn-confirm" type="button" style="padding:6px 20px;background:#52c41a;border:none;color:#ffffff;border-radius:4px;cursor:pointer;font-size:13px;">导出</button>
         </div>
       </div>
     </div>
@@ -384,17 +314,16 @@
     <script type="module" crossorigin src="./index-BeSQZLB_.js"></script>
 
     <script>
-      // 格式与尺寸选择逻辑
-      window.selectedExportFormat = 'png';
-      window.switchExportFormat = function(el, fmt) {
-        document.querySelectorAll('.fmt-option-card').forEach(function(card) { card.classList.remove('active'); });
+      window.curExportFormat = 'png';
+      window.setExportFormat = function(el, fmt) {
+        document.querySelectorAll('.ep-card').forEach(function(c) { c.classList.remove('active'); });
         el.classList.add('active');
-        window.selectedExportFormat = fmt;
+        window.curExportFormat = fmt;
       };
 
-      window.resetDefaultSize = function() {
-        document.getElementById('input-exp-w').value = 420;
-        document.getElementById('input-exp-h').value = 420;
+      window.restoreSize = function() {
+        document.getElementById('target-inp-w').value = 420;
+        document.getElementById('target-inp-h').value = 320;
       };
 
       (function() {
@@ -480,81 +409,58 @@
         }
         setInterval(restoreTemplateImages, 300);
 
-        // 4. 弹窗打开、关闭与导出动作接管
-        var popupTpl = document.getElementById('popup-template-dialog');
-        var popupExp = document.getElementById('popup-export-dialog');
-
-        document.getElementById('btn-close-tpl').onclick = function() { popupTpl.style.display = 'none'; };
-        document.getElementById('btn-close-exp').onclick = function() { popupExp.style.display = 'none'; };
-
-        popupTpl.onclick = function(e) { if (e.target === popupTpl) popupTpl.style.display = 'none'; };
-        popupExp.onclick = function(e) { if (e.target === popupExp) popupExp.style.display = 'none'; };
-
-        // 导出模板功能
-        document.getElementById('btn-save-tpl-action').onclick = function() {
-          var tplTitle = document.getElementById('custom-tpl-title').value.trim() || '印章模板';
-          var tplData = localStorage.getItem('drawstamp_current_stamp') || '{}';
-          var blob = new Blob([tplData], { type: 'application/json' });
-          var link = document.createElement('a');
-          link.download = tplTitle + '.json';
-          link.href = URL.createObjectURL(blob);
-          link.click();
-          popupTpl.style.display = 'none';
+        // 4. 弹窗打开与关闭
+        var popupModal = document.getElementById('target-export-popup-mask');
+        document.getElementById('ep-btn-cancel').onclick = function() {
+          popupModal.style.display = 'none';
+        };
+        popupModal.onclick = function(e) {
+          if (e.target === popupModal) popupModal.style.display = 'none';
         };
 
-        // 导出印章图片功能
-        document.getElementById('btn-do-exp-action').onclick = function() {
+        // 真实导出执行
+        document.getElementById('ep-btn-confirm').onclick = function() {
           var canvas = document.querySelector('canvas');
           if (canvas) {
-            var fmt = window.selectedExportFormat || 'png';
+            var fmt = window.curExportFormat || 'png';
             var link = document.createElement('a');
             link.download = '印章.' + fmt;
             link.href = canvas.toDataURL(fmt === 'jpeg' ? 'image/jpeg' : 'image/png');
             link.click();
           }
-          popupExp.style.display = 'none';
+          popupModal.style.display = 'none';
         };
 
-        // 5. 绑定图1操作台按钮：
-        // 图1第二个按钮（上箭头）点击 -> 打开 图2（导出模板弹窗）
-        // 图1第四个按钮（软盘）点击 -> 彻底去除 3/5，打开 图4（选择导出格式弹窗）
-        function bindFooterButtons() {
+        // 5. 核心拦截：使用顶级 DOM 捕获阶段，强力拦截并打开图2
+        function bindDiskButton() {
           var btns = document.querySelectorAll('.canvas-footer .canvas-action-btn, .canvas-action-btn');
           if (!btns || btns.length < 4) return;
 
-          // 抹除软盘图标内部纯文本（去 3/5）
-          var fourthBtn = btns[3];
-          if (fourthBtn) {
-            Array.from(fourthBtn.childNodes).forEach(function(n) {
-              if (n.nodeType === Node.TEXT_NODE && n.textContent.trim()) {
-                n.textContent = '';
-              }
-            });
-          }
+          var fourthBtn = btns[3]; // 第4个软盘图标
+          if (!fourthBtn) return;
 
-          // 图1 第二个按钮（上箭头盒子）点击 -> 打开 图2（导出模板弹窗）
-          var secondBtn = btns[1];
-          if (secondBtn && !secondBtn.dataset.boundTplAction) {
-            secondBtn.dataset.boundTplAction = "true";
-            secondBtn.onclick = function(e) {
+          // 抹除 3/5 纯文本节点
+          Array.from(fourthBtn.childNodes).forEach(function(n) {
+            if (n.nodeType === Node.TEXT_NODE && n.textContent.trim()) {
+              n.textContent = '';
+            }
+          });
+
+          // 如果还没挂上强力捕获监听器
+          if (!fourthBtn.dataset.strictBound) {
+            fourthBtn.dataset.strictBound = "true";
+
+            // 关键：在 capture: true 捕获阶段强行截杀 Vue 事件，直接弹出图2
+            fourthBtn.addEventListener('click', function(e) {
               e.preventDefault();
               e.stopPropagation();
-              popupTpl.style.display = 'flex';
-            };
-          }
-
-          // 图1 第四个按钮（软盘）点击 -> 打开 图4（选择导出格式弹窗）
-          if (fourthBtn && !fourthBtn.dataset.boundExpAction) {
-            fourthBtn.dataset.boundExpAction = "true";
-            fourthBtn.onclick = function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              popupExp.style.display = 'flex';
-            };
+              e.stopImmediatePropagation(); // 彻底阻止 Vue 原生响应阻断
+              popupModal.style.display = 'flex';
+            }, true);
           }
         }
 
-        setInterval(bindFooterButtons, 200);
+        setInterval(bindDiskButton, 100);
       })();
     </script>
   </body>
