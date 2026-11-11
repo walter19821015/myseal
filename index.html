@@ -24,7 +24,7 @@
     <script src="https://res.zvo.cn/translate/translate.js"></script>
 
     <style>
-      /* ================= 解决问题 1：永久彻底封杀安全警告弹窗与横幅 ================= */
+      /* 1. 彻底封杀安全警告弹窗与横幅 */
       .legal-disclaimer,
       .legal-dialog-overlay,
       .legal-dialog,
@@ -34,10 +34,9 @@
         visibility: hidden !important;
         opacity: 0 !important;
         pointer-events: none !important;
-        z-index: -9999 !important;
       }
 
-      /* 屏蔽所有首页废话、原版中间导航、登录按钮、页脚 */
+      /* 2. 屏蔽所有首页废话、原版中间导航、登录按钮、页脚 */
       .nav-links,
       .login-btn,
       .user-actions,
@@ -56,7 +55,7 @@
         display: none !important;
       }
 
-      /* 顶栏排版与自定义按钮 */
+      /* 3. 顶栏排版与自定义首页/语言按钮 */
       .nav-content, header {
         display: flex !important;
         align-items: center !important;
@@ -98,32 +97,14 @@
         border-color: rgba(0, 0, 0, 0.25) !important;
       }
 
-      /* ================= 解决问题 2：彻底清除模板卡片里破损裂开的难看红叉 ================= */
-      .template-item-horizontal,
-      .template-item {
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        min-height: 120px !important;
-        background: #ffffff !important;
-      }
-
-      /* 只要是裂开的图片，彻底隐藏，不显示破损框 */
-      img[data-broken="true"],
-      .img-broken {
+      /* 4. 隐藏第4个软盘图标旁边的 5/5 配额字样 */
+      .save-count-badge,
+      .save-count-small,
+      .canvas-action-btn span,
+      [class*="save-count"] {
         display: none !important;
+        font-size: 0 !important;
         visibility: hidden !important;
-        height: 0 !important;
-        width: 0 !important;
-      }
-
-      /* 让有完整图的正常显示 */
-      .template-preview img:not([data-broken="true"]),
-      .template-preview-small img:not([data-broken="true"]) {
-        object-fit: contain;
-        width: 100%;
-        height: 100%;
       }
     </style>
   </head>
@@ -134,7 +115,7 @@
 
     <script>
       (function() {
-        // 1. 标题重命名
+        // A. 标题重命名
         setInterval(function() {
           var logo = document.querySelector('.logo');
           if (logo && logo.textContent !== '印章生成器') {
@@ -142,7 +123,7 @@
           }
         }, 150);
 
-        // 2. 挂载自定义翻译菜单和首页按钮
+        // B. 挂载自定义翻译菜单和首页按钮
         function mountTranslate() {
           if (document.getElementById('lang-dropdown-wrapper')) return;
 
@@ -195,31 +176,53 @@
         var mountTimer = setInterval(mountTranslate, 150);
         setTimeout(function() { clearInterval(mountTimer); }, 8000);
 
-        // 3. 彻底清除裂开图片的破损红叉与边框
-        function cleanBrokenImages() {
-          var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
-          imgs.forEach(function(img) {
-            // 如果图片加载失败，直接隐藏
-            img.onerror = function() {
-              this.style.display = 'none';
-              this.setAttribute('data-broken', 'true');
-              this.classList.add('img-broken');
-              if (this.parentElement) {
-                this.parentElement.style.display = 'none';
+        // C. 只接管图1按钮行为：
+        // 1. 去掉软盘上的 5/5
+        // 2. 第二个按钮点开触发图2（导出图片弹窗）
+        // 3. 第四个按钮点开触发图3（导出模板弹窗）
+        function hookToolButtons() {
+          var actionBtns = document.querySelectorAll('.canvas-footer .canvas-action-btn, .canvas-action-btn');
+          if (!actionBtns || actionBtns.length < 4) return;
+
+          // 去除第4个按钮内部文本 (5/5)
+          var fourthBtn = actionBtns[3];
+          if (fourthBtn) {
+            Array.from(fourthBtn.childNodes).forEach(function(node) {
+              if (node.nodeType === Node.TEXT_NODE) {
+                node.textContent = '';
               }
-            };
-            // 针对已处于自然破损状态的做即时隐藏
-            if (img.naturalWidth === 0 && img.complete) {
-              img.style.display = 'none';
-              img.setAttribute('data-broken', 'true');
-              img.classList.add('img-broken');
-              if (img.parentElement) {
-                img.parentElement.style.display = 'none';
+            });
+          }
+
+          // 第二个按钮触发图2弹窗
+          var secondBtn = actionBtns[1];
+          if (secondBtn && !secondBtn.dataset.hooked) {
+            secondBtn.dataset.hooked = "true";
+            secondBtn.addEventListener('click', function() {
+              var rawExportImgBtn = document.querySelector('.primary-button') || Array.from(document.querySelectorAll('button')).find(function(b) {
+                return (b.innerText || '').indexOf('导出') !== -1 && (b.innerText || '').indexOf('模板') === -1;
+              });
+              if (rawExportImgBtn && rawExportImgBtn !== secondBtn) {
+                rawExportImgBtn.click();
               }
-            }
-          });
+            }, true);
+          }
+
+          // 第四个按钮触发图3弹窗
+          if (fourthBtn && !fourthBtn.dataset.hooked) {
+            fourthBtn.dataset.hooked = "true";
+            fourthBtn.addEventListener('click', function() {
+              var rawExportTplBtn = document.querySelector('.save-template-btn') || Array.from(document.querySelectorAll('button')).find(function(b) {
+                return (b.innerText || '').indexOf('导出模板') !== -1;
+              });
+              if (rawExportTplBtn && rawExportTplBtn !== fourthBtn) {
+                rawExportTplBtn.click();
+              }
+            }, true);
+          }
         }
-        setInterval(cleanBrokenImages, 300);
+
+        setInterval(hookToolButtons, 200);
       })();
     </script>
   </body>
