@@ -461,7 +461,6 @@
       };
 
       (function() {
-        // 1. 标题重命名
         setInterval(function() {
           var logo = document.querySelector('.logo');
           if (logo && logo.textContent !== '印章生成器') {
@@ -469,7 +468,6 @@
           }
         }, 150);
 
-        // 2. 自定义翻译菜单和首页按钮
         function mountTranslate() {
           if (document.getElementById('lang-dropdown-wrapper')) return;
           var navContainer = document.querySelector('.nav-content') || document.querySelector('.navbar') || document.querySelector('header');
@@ -520,7 +518,6 @@
         var mountTimer = setInterval(mountTranslate, 150);
         setTimeout(function() { clearInterval(mountTimer); }, 8000);
 
-        // 3. 模板真图拉取（保持原貌）
         function restoreTemplateImages() {
           var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
           imgs.forEach(function(img) {
@@ -543,7 +540,6 @@
         }
         setInterval(restoreTemplateImages, 300);
 
-        // 4. 弹窗打开/关闭
         var popupTpl = document.getElementById('popup-template-dialog');
         var popupExp = document.getElementById('popup-export-dialog');
 
@@ -553,7 +549,6 @@
         popupTpl.onclick = function(e) { if (e.target === popupTpl) popupTpl.style.display = 'none'; };
         popupExp.onclick = function(e) { if (e.target === popupExp) popupExp.style.display = 'none'; };
 
-        // 导出模板
         document.getElementById('btn-save-tpl-action').onclick = function() {
           var title = document.getElementById('custom-tpl-title').value.trim() || '印章模板';
           var data = localStorage.getItem('drawstamp_current_stamp') || '{}';
@@ -565,7 +560,7 @@
           popupTpl.style.display = 'none';
         };
 
-        // ================= 核心修复：纯净无标尺无网格的 1:1 印章导出 =================
+        // ================= 严格精准裁切：获取纯印章内容（0标尺，0网格） =================
         document.getElementById('btn-do-exp-action').onclick = function() {
           popupExp.style.display = 'none';
 
@@ -574,22 +569,18 @@
           var fmt = window.curFormat || 'png';
           var quality = parseInt(document.getElementById('quality-slider').value) / 100;
 
-          // 获取中心印章真正的矢量根节点或内层图层（绝不获取工作区外层带标尺的容器）
-          var stampSvg = document.querySelector('.stamp-svg, .main-canvas svg, .canvas-area svg, svg[id*="stamp"]');
+          // 获取原版印章 SVG 标签（只有纯印章文字、红圈，不包含标尺网格）
+          var stampSvg = document.querySelector('.stamp-workspace svg, .canvas-container svg, .stamp-svg, svg[id*="stamp"]');
+          if (!stampSvg) {
+            // 兜底：从非操作栏的 SVG 中筛选
+            stampSvg = Array.from(document.querySelectorAll('svg')).find(function(s) {
+              return !s.closest('.nav-content') && !s.closest('#lang-dropdown-wrapper') && !s.closest('.canvas-footer') && s.clientWidth > 50;
+            });
+          }
 
-          // A. 如果选择导出 SVG 矢量图
+          // A. 导出 SVG
           if (fmt === 'svg') {
-            var svgData = '';
-            if (stampSvg) {
-              svgData = (new XMLSerializer()).serializeToString(stampSvg);
-            } else {
-              // 备用：从全局查找
-              var svgs = Array.from(document.querySelectorAll('svg')).filter(function(s) {
-                return !s.closest('.nav-content') && !s.closest('#lang-dropdown-wrapper') && !s.closest('.canvas-footer');
-              });
-              if (svgs.length > 0) svgData = (new XMLSerializer()).serializeToString(svgs[0]);
-            }
-
+            var svgData = stampSvg ? (new XMLSerializer()).serializeToString(stampSvg) : '';
             if (svgData) {
               var blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
               var link = document.createElement('a');
@@ -600,16 +591,9 @@
             }
           }
 
-          // B. 导出 PNG / JPEG（从纯净矢量源转出，或者精准抓取纯印章内部离屏 Canvas）
-          // 查找画布内真正仅属于印章的 canvas（排除包含标尺的全局 canvas）
-          var stampCanvas = Array.from(document.querySelectorAll('canvas')).find(function(c) {
-            // 排除含有 ruler / grid 样式的画布
-            var cls = (c.className || '') + ' ' + (c.parentElement ? c.parentElement.className : '');
-            return cls.indexOf('ruler') === -1 && cls.indexOf('grid') === -1 && c.width > 100;
-          });
-
-          // 如果有纯净矢量 SVG，直接通过 Image 离屏绘制（最清晰，100% 纯透明底）
+          // B. 导出 PNG / JPEG
           if (stampSvg) {
+            // 从纯净 SVG 重新绘制到离屏 Canvas，绝对不含外层标尺网格
             var sData = (new XMLSerializer()).serializeToString(stampSvg);
             var svgBlob = new Blob([sData], { type: 'image/svg+xml;charset=utf-8' });
             var url = URL.createObjectURL(svgBlob);
@@ -637,8 +621,10 @@
             return;
           }
 
-          // 如果是纯 Canvas 图层：执行离屏像素级裁剪居中
-          if (stampCanvas) {
+          // 如果没有找到 SVG，从主 Canvas 自动裁剪掉四周的标尺边界
+          var allCanvases = Array.from(document.querySelectorAll('canvas'));
+          var mainCanvas = allCanvases[allCanvases.length - 1];
+          if (mainCanvas) {
             var outCanvas = document.createElement('canvas');
             outCanvas.width = targetW;
             outCanvas.height = targetH;
@@ -649,14 +635,12 @@
               ctx.fillRect(0, 0, targetW, targetH);
             }
 
-            // 智能居中缩放绘制
-            var scale = Math.min(targetW / stampCanvas.width, targetH / stampCanvas.height);
-            var dw = stampCanvas.width * scale;
-            var dh = stampCanvas.height * scale;
-            var dx = (targetW - dw) / 2;
-            var dy = (targetH - dh) / 2;
+            // 标尺宽度通常占据左上角 20~30px，从纯净区域切取印章
+            var rulerOffset = 25;
+            var sw = Math.max(1, mainCanvas.width - rulerOffset);
+            var sh = Math.max(1, mainCanvas.height - rulerOffset);
 
-            ctx.drawImage(stampCanvas, dx, dy, dw, dh);
+            ctx.drawImage(mainCanvas, rulerOffset, rulerOffset, sw, sh, 0, 0, targetW, targetH);
 
             var link = document.createElement('a');
             link.download = 'mystamp.' + fmt;
@@ -665,12 +649,11 @@
           }
         };
 
-        // 5. 绑定操作台按钮
         function bindAllActionButtons() {
           var btns = document.querySelectorAll('.canvas-footer .canvas-action-btn, .canvas-action-btn');
           if (!btns || btns.length < 4) return;
 
-          // 第 4 个软盘图标：去灰、去配额文字、绑导出弹窗
+          // 第 4 个软盘图标
           var fourthBtn = btns[3];
           if (fourthBtn) {
             fourthBtn.removeAttribute('disabled');
@@ -694,7 +677,7 @@
             }
           }
 
-          // 第 2 个上箭头图标：绑模板弹窗
+          // 第 2 个上箭头图标
           var secondBtn = btns[1];
           if (secondBtn && !secondBtn.dataset.strictTplBound) {
             secondBtn.dataset.strictTplBound = "true";
