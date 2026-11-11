@@ -6,6 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>印章生成器</title>
 
+    <script>
+      // 核心拦截：如果不是以 /maker 结尾，在整个 Vue 实例启动前瞬间重定向到 /maker 路由
+      (function() {
+        var p = window.location.pathname;
+        if (!p.endsWith('/maker') && !p.endsWith('/maker/')) {
+          var target = p.replace(/\/+$/, '') + '/maker';
+          window.location.replace(target);
+        }
+      })();
+    </script>
+
     <!-- 引用核心样式表 -->
     <link rel="stylesheet" crossorigin href="./index-B9o7yvK4.css">
 
@@ -13,34 +24,26 @@
     <script src="https://res.zvo.cn/translate/translate.js"></script>
 
     <style>
-      /* 1. 隐藏首页所有废话宣传与页脚 */
-      .qq-notification-banner,
-      .hero-section,
-      .hero-content,
-      .why-choose-section,
-      .how-it-works-section,
-      .features-section,
-      .faq-section,
-      .warning-section,
-      .cta-section,
-      .stamp-types-section,
-      footer,
-      .footer {
-        display: none !important;
-      }
-
-      /* 2. 隐藏原作者自带的导航与旧语言下拉框 */
+      /* 1. 屏蔽所有首页废话、原版中间导航、登录按钮、页脚 */
       .nav-links,
       .login-btn,
       .user-actions,
       .language-switch,
       .nav-right,
       header select,
-      nav select {
+      nav select,
+      footer,
+      .footer,
+      .hero-section,
+      .qq-notification-banner,
+      .why-choose-section,
+      .how-it-works-section,
+      .features-section,
+      .faq-section {
         display: none !important;
       }
 
-      /* 3. 顶栏对齐与自定义按钮 */
+      /* 2. 顶栏排版与自定义按钮规范 */
       .nav-content, header {
         display: flex !important;
         align-items: center !important;
@@ -82,13 +85,7 @@
         border-color: rgba(0, 0, 0, 0.25) !important;
       }
 
-      /* 4. 确保工作台撑开 */
-      .main-workspace {
-        display: flex !important;
-        visibility: visible !important;
-      }
-
-      /* 模板卡片防裂 */
+      /* 3. 模板卡片防裂 */
       .template-item img,
       .template-preview img,
       .template-preview-small img {
@@ -108,45 +105,15 @@
 
     <script>
       (function() {
-        // A. 改名：左上角 DrawStamp -> 印章生成器
+        // A. 标题重命名
         setInterval(function() {
           var logo = document.querySelector('.logo');
           if (logo && logo.textContent !== '印章生成器') {
             logo.textContent = '印章生成器';
           }
-        }, 200);
+        }, 150);
 
-        // B. 平稳激活编辑器：只触发一次，绝不循环强刷
-        var hasTriggered = false;
-        var checkTimer = setInterval(function() {
-          if (hasTriggered) {
-            clearInterval(checkTimer);
-            return;
-          }
-
-          // 如果已经出现画布，直接停止
-          if (document.querySelector('canvas, .canvas-area, [class*="canvas"]')) {
-            hasTriggered = true;
-            clearInterval(checkTimer);
-            return;
-          }
-
-          // 寻找带有“印章模板”或者切换编辑器的链接，平稳点击一次
-          var allLinks = Array.from(document.querySelectorAll('a, button, span, .nav-link'));
-          var target = allLinks.find(function(el) {
-            return (el.innerText || el.textContent || '').trim() === '印章模板';
-          });
-
-          if (target) {
-            hasTriggered = true;
-            target.click();
-            clearInterval(checkTimer);
-          }
-        }, 100);
-
-        setTimeout(function() { clearInterval(checkTimer); }, 6000);
-
-        // C. 挂载自定义翻译菜单和首页按钮
+        // B. 挂载自定义翻译菜单和首页按钮
         function mountTranslate() {
           if (document.getElementById('lang-dropdown-wrapper')) return;
 
@@ -199,7 +166,7 @@
         var mountTimer = setInterval(mountTranslate, 150);
         setTimeout(function() { clearInterval(mountTimer); }, 8000);
 
-        // D. 修复模板图片
+        // C. 修复模板图片
         function fixBrokenImages() {
           var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
           imgs.forEach(function(img) {
