@@ -10,8 +10,16 @@
     <link rel="stylesheet" crossorigin href="./index-B9o7yvK4.css">
 
     <style>
-      /* 隐藏多余导航与页脚 */
+      /* 1. 隐藏多余导航与页脚 */
       .nav-links, .login-btn, .user-actions, footer, .footer {
+        display: none !important;
+      }
+
+      /* 2. 彻底隐藏右上角的语言切换组件 (Language 下拉框) */
+      .language-switch,
+      .nav-right,
+      header select,
+      nav select {
         display: none !important;
       }
 
@@ -24,7 +32,7 @@
         height: 100%;
       }
 
-      /* 彻底抹掉浏览器自带的破损图标边框与裂开红叉 */
+      /* 抹除破损图标红叉边框 */
       img[data-broken="true"] {
         display: none !important;
       }
@@ -45,12 +53,21 @@
           }
         }, 100);
 
-        // 2. 保证无论刷新还是初次加载都留在 /myseal/
+        // 2. 物理彻底移除右上角 Language 语言切换节点
+        function removeLanguageSwitch() {
+          var langNodes = document.querySelectorAll('.language-switch, .nav-right');
+          langNodes.forEach(function(el) {
+            el.remove();
+          });
+        }
+        setInterval(removeLanguageSwitch, 100);
+
+        // 3. 保证无论刷新还是初次加载都留在 /myseal/
         if (location.pathname.indexOf('/maker') !== -1) {
           history.replaceState(null, '', '/myseal/');
         }
 
-        // 3. 自动触发进入编辑台
+        // 4. 自动触发进入编辑台
         var initTimer = setInterval(function() {
           if (document.querySelector('canvas, .canvas-container')) {
             clearInterval(initTimer);
@@ -69,7 +86,7 @@
           }
         }, 30);
 
-        // 4. 关键：修复并补全裂开的模板图标
+        // 5. 补全/修复模板缩略图标
         function fixBrokenImages() {
           var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
           imgs.forEach(function(img) {
@@ -78,24 +95,17 @@
 
             img.onerror = function() {
               var currentSrc = img.src;
-
-              // 如果已经是尝试过原站官方源或已经是兜底图，直接优雅隐藏破损标签，露出卡片文字
               if (img.dataset.triedOriginal === "true") {
                 img.setAttribute('data-broken', 'true');
                 return;
               }
-
-              // 尝试回退从官方原站获取缺失的静态资源
               img.dataset.triedOriginal = "true";
               var relativePath = currentSrc.replace(window.location.origin, '').replace(/^\/myseal/, '');
-              
-              // 自动切换为原站对应资源路径尝试加载
               img.src = 'https://drawstamp.com' + relativePath;
             };
           });
         }
 
-        // 持续监听模板列表渲染，动态挂载图片修复
         var imgObserver = new MutationObserver(fixBrokenImages);
         imgObserver.observe(document.body, { childList: true, subtree: true });
         setInterval(fixBrokenImages, 300);
