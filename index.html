@@ -6,13 +6,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>印章生成器</title>
     <link rel="stylesheet" crossorigin href="./index-B9o7yvK4.css">
-    <style>
-      /* 物理收起失去内容后的空容器骨架 */
-      footer { display: none !important; }
-    </style>
   </head>
   <body>
     <div id="app"></div>
     <script type="module" crossorigin src="./index-BeSQZLB_.js"></script>
+
+    <script>
+      (function() {
+        var triggered = false;
+
+        function initApp() {
+          // 1. 改名：左上角 DrawStamp -> 印章生成器
+          var allNodes = document.querySelectorAll('header *, nav *, h1, a, span, div');
+          allNodes.forEach(function(el) {
+            if (el.children.length === 0 && (el.textContent || '').trim() === 'DrawStamp') {
+              el.textContent = '印章生成器';
+            }
+          });
+
+          // 2. 自动触发进入编辑台
+          if (triggered) return;
+          var isEditorVisible = !!document.querySelector('canvas, .canvas-container, [class*="canvas"]');
+          if (isEditorVisible) {
+            triggered = true;
+            return;
+          }
+
+          var candidates = Array.from(document.querySelectorAll('header a, nav a, header button, nav button, span, div'));
+          var stampTarget = candidates.find(function(el) {
+            return (el.innerText || el.textContent || '').trim() === '印章模板';
+          });
+
+          if (stampTarget) {
+            ['mousedown', 'mouseup', 'click'].forEach(function(evt) {
+              stampTarget.dispatchEvent(new MouseEvent(evt, { bubbles: true, cancelable: true, view: window }));
+            });
+            triggered = true;
+          }
+        }
+
+        var observer = new MutationObserver(initApp);
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        var timer = setInterval(initApp, 30);
+        setTimeout(function() { clearInterval(timer); }, 6000);
+      })();
+    </script>
   </body>
 </html>
