@@ -1,5 +1,21 @@
 <!doctype html>
 <html lang="zh-CN">
+  <script>
+      // 进站自动直达印章制作台
+      (function() {
+        var timer = setInterval(function() {
+          var elements = Array.from(document.querySelectorAll('a, button, span, div'));
+          var btn = elements.find(function(el) {
+            return el.textContent && el.textContent.trim() === '印章模板';
+          });
+          if (btn) {
+            btn.click();
+            clearInterval(timer);
+          }
+        }, 30);
+        setTimeout(function() { clearInterval(timer); }, 6000);
+      })();
+    </script>
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="logo64.png" />
@@ -30,10 +46,11 @@
     <meta name="theme-color" content="#007bff" />
     <!-- umani stats -->
     <script defer src="https://cloud.umami.is/script.js" data-website-id="51ef2aef-2499-463f-86f2-1a0b8d545263"></script>
-    <script type="module" crossorigin src="assets/index-BeSQZLB_.js"></script>
-    <link rel="stylesheet" crossorigin href="assets/index-B9o7yvK4.css">
+    <script type="module" crossorigin src="./index-BeSQZLB_.js"></script>
+    <link rel="stylesheet" crossorigin href="./index-B9o7yvK4.css">
   </head>
   <body>
     <div id="app"></div>
+
   <!-- Cloudflare Pages Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2049f8587d1c4501b6d9dee0dbd3407c"}'></script><!-- Cloudflare Pages Analytics --></body>
 </html>
