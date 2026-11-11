@@ -14,6 +14,20 @@
       .nav-links, .login-btn, .user-actions, footer, .footer {
         display: none !important;
       }
+
+      /* 针对模板卡片内的图片优化：防止裂图撑破布局 */
+      .template-item img,
+      .template-preview img,
+      .template-preview-small img {
+        object-fit: contain;
+        width: 100%;
+        height: 100%;
+      }
+
+      /* 彻底抹掉浏览器自带的破损图标边框与裂开红叉 */
+      img[data-broken="true"] {
+        display: none !important;
+      }
     </style>
   </head>
   <body>
@@ -23,7 +37,7 @@
 
     <script>
       (function() {
-        // 1. 改名
+        // 1. 改名：左上角 DrawStamp -> 印章生成器
         setInterval(function() {
           var logo = document.querySelector('.logo');
           if (logo && logo.textContent !== '印章生成器') {
@@ -31,16 +45,15 @@
           }
         }, 100);
 
-        // 2. 核心：如果地址栏误入了 /maker 导致刷新会404，立刻修正回 /myseal/
+        // 2. 保证无论刷新还是初次加载都留在 /myseal/
         if (location.pathname.indexOf('/maker') !== -1) {
           history.replaceState(null, '', '/myseal/');
         }
 
-        // 3. 原地触发：进站直接把编辑器点开，且地址栏稳稳锁在 /myseal/
-        var timer = setInterval(function() {
+        // 3. 自动触发进入编辑台
+        var initTimer = setInterval(function() {
           if (document.querySelector('canvas, .canvas-container')) {
-            clearInterval(timer);
-            // 确保渲染后地址依然在 /myseal/，怎么刷新都不丢
+            clearInterval(initTimer);
             if (location.pathname !== '/myseal/') {
               history.replaceState(null, '', '/myseal/');
             }
@@ -51,11 +64,41 @@
           var target = btns.find(function(el) {
             return (el.innerText || el.textContent || '').trim() === '印章模板';
           });
-
           if (target) {
             target.click();
           }
         }, 30);
+
+        // 4. 关键：修复并补全裂开的模板图标
+        function fixBrokenImages() {
+          var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
+          imgs.forEach(function(img) {
+            if (img.dataset.hasHooked) return;
+            img.dataset.hasHooked = "true";
+
+            img.onerror = function() {
+              var currentSrc = img.src;
+
+              // 如果已经是尝试过原站官方源或已经是兜底图，直接优雅隐藏破损标签，露出卡片文字
+              if (img.dataset.triedOriginal === "true") {
+                img.setAttribute('data-broken', 'true');
+                return;
+              }
+
+              // 尝试回退从官方原站获取缺失的静态资源
+              img.dataset.triedOriginal = "true";
+              var relativePath = currentSrc.replace(window.location.origin, '').replace(/^\/myseal/, '');
+              
+              // 自动切换为原站对应资源路径尝试加载
+              img.src = 'https://drawstamp.com' + relativePath;
+            };
+          });
+        }
+
+        // 持续监听模板列表渲染，动态挂载图片修复
+        var imgObserver = new MutationObserver(fixBrokenImages);
+        imgObserver.observe(document.body, { childList: true, subtree: true });
+        setInterval(fixBrokenImages, 300);
       })();
     </script>
   </body>
