@@ -7,7 +7,7 @@
     
     <!-- SEO Meta Tags -->
     <title>印章生成器 - 在线电子印章制作工具</title>
-    <meta name="description" content="专业的在线电子印章制作工具，支持自定义设计、多种模板、防伪效果等功能。" />
+    <meta name="description" content="DrawStamp 是一个专业的在线电子印章制作工具，支持自定义设计、多种模板、防伪效果等功能。" />
     
     <!-- 引入翻译引擎核心 -->
     <script src="https://res.zvo.cn/translate/translate.js"></script>
@@ -28,14 +28,13 @@
         box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
       }
 
-      #custom-header-title {
+      #custom-title-node {
         font-size: 18px !important;
         font-weight: bold !important;
         color: #1f2937 !important;
-        letter-spacing: 0.5px !important;
+        line-height: 1 !important;
         display: flex !important;
         align-items: center !important;
-        line-height: 1 !important;
         user-select: none !important;
       }
 
@@ -97,25 +96,12 @@
         setTimeout(function() { clearInterval(timer); }, 6000);
       })();
 
-      // 2. 挂载右侧定制胶囊按钮（首页 + 语言下拉）
-      (function() {
-        function initTranslate() {
-          if (typeof translate === 'undefined') {
-            setTimeout(initTranslate, 50);
-            return;
-          }
-          translate.selectLanguageTag.show = false;
-          translate.service.use('client.edge');
-          translate.execute();
+      // 2. 挂载我们定制的胶囊按钮与翻译组件
+      function mountCustomControls() {
+        var header = document.querySelector('header');
+        if (!header) return;
 
-          if (document.getElementById('lang-dropdown-wrapper')) return;
-
-          var header = document.querySelector('header');
-          if (!header) {
-            setTimeout(initTranslate, 50);
-            return;
-          }
-
+        if (!document.getElementById('lang-dropdown-wrapper')) {
           var wrapper = document.createElement('div');
           wrapper.id = 'lang-dropdown-wrapper';
           wrapper.innerHTML = `
@@ -129,14 +115,13 @@
                 <span style="font-size:10px;opacity:0.7;">▼</span>
               </button>
               <div id="langMenu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);width:120px;background:#ffffff;border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,0.12);border:1px solid #e5e7eb;overflow:hidden;z-index:999999;padding:4px 0;">
-                <a href="javascript:translate.changeLanguage('chinese_simplified');" style="display:block;padding:8px 14px;color:#374151;font-size:13px;text-decoration:none;">简体中文</a>
-                <a href="javascript:translate.changeLanguage('english');" style="display:block;padding:8px 14px;color:#374151;font-size:13px;text-decoration:none;">English</a>
-                <a href="javascript:translate.changeLanguage('spanish');" style="display:block;padding:8px 14px;color:#374151;font-size:13px;text-decoration:none;">Español</a>
-                <a href="javascript:translate.changeLanguage('arabic');" style="display:block;padding:8px 14px;color:#374151;font-size:13px;text-decoration:none;">العربية</a>
+                <a href="javascript:if(window.translate)translate.changeLanguage('chinese_simplified');" style="display:block;padding:8px 14px;color:#374151;font-size:13px;text-decoration:none;">简体中文</a>
+                <a href="javascript:if(window.translate)translate.changeLanguage('english');" style="display:block;padding:8px 14px;color:#374151;font-size:13px;text-decoration:none;">English</a>
+                <a href="javascript:if(window.translate)translate.changeLanguage('spanish');" style="display:block;padding:8px 14px;color:#374151;font-size:13px;text-decoration:none;">Español</a>
+                <a href="javascript:if(window.translate)translate.changeLanguage('arabic');" style="display:block;padding:8px 14px;color:#374151;font-size:13px;text-decoration:none;">العربية</a>
               </div>
             </div>
           `;
-
           header.appendChild(wrapper);
 
           var btn = document.getElementById('langMenuBtn');
@@ -151,60 +136,86 @@
           menu.onclick = function() {
             menu.style.display = 'none';
           };
-        }
 
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', initTranslate);
-        } else {
-          initTranslate();
-        }
-      })();
-
-      // 3. 严格物理删除（remove）指定节点，修复模板缩略图裂开
-      (function() {
-        var cleanTimer = setInterval(function() {
-          // A. 物理彻底删除底部所有元素与版权信息
-          var footers = document.querySelectorAll('footer, .footer, [class*="footer-wrapper"], [class*="bottom-bar"]');
-          footers.forEach(function(f) {
-            f.remove();
-          });
-
-          // B. 顶栏处理：左侧标题，物理删除中间与右侧无用项
-          var header = document.querySelector('header');
-          if (header) {
-            // 左侧写入“印章生成器”
-            if (!document.getElementById('custom-header-title')) {
-              var titleSpan = document.createElement('div');
-              titleSpan.id = 'custom-header-title';
-              titleSpan.textContent = '印章生成器';
-              header.prepend(titleSpan);
+          try {
+            if (typeof translate !== 'undefined') {
+              translate.selectLanguageTag.show = false;
+              translate.service.use('client.edge');
+              translate.execute();
             }
+          } catch(err) {}
+        }
+      }
 
-            // 物理删除原作者无用元素
-            var els = header.querySelectorAll('*');
-            els.forEach(function(el) {
-              if (el.id === 'custom-header-title' || el.closest('#lang-dropdown-wrapper')) return;
-              var txt = el.textContent ? el.textContent.trim() : '';
-              // 删除英文Logo、中间菜单项、登录按钮
-              if (txt === 'DrawStamp' || ['首页', '印章模板', '关于我们', '联系我们', '登录'].indexOf(txt) !== -1) {
-                el.remove();
-              }
-              // 删除原作者旧语言下拉框
-              if (txt.indexOf('Language') !== -1 && el.tagName === 'DIV' && !el.id) {
-                el.remove();
-              }
-            });
+      // 3. 强力清除器：整块拔除中间菜单容器、登录与原生语言框
+      setInterval(function() {
+        // A. 彻底物理删除底部版权
+        var footers = document.querySelectorAll('footer, .footer, [class*="footer-wrapper"], [class*="bottom-bar"]');
+        footers.forEach(function(f) { f.remove(); });
+
+        var header = document.querySelector('header');
+        if (header) {
+          // B. 确保挂载我们的控制组
+          mountCustomControls();
+
+          // C. 处理左侧 Logo：把原本写着 DrawStamp 的节点直接改写成“印章生成器”
+          var brand = header.querySelector('.brand, .logo, [class*="logo"]');
+          if (brand) {
+            brand.textContent = '印章生成器';
+            brand.id = 'custom-title-node';
           }
 
-          // C. 修复模板裂开图标：自动读取原作者内置静态模板路径并补齐
-          var imgs = document.querySelectorAll('.template-item img, [class*="template"] img');
-          imgs.forEach(function(img) {
-            if (img.src && img.src.indexOf('/src/assets/') !== -1) {
-              img.src = img.src.replace('/src/assets/', './assets/');
+          // D. 整块删除中间导航菜单容器（含首页、印章模板、关于我们、联系我们）
+          var navContainers = header.querySelectorAll('nav, ul, .nav, .menu, .navbar-nav, .header-menu, [class*="nav-list"]');
+          navContainers.forEach(function(n) {
+            if (!n.closest('#lang-dropdown-wrapper')) {
+              n.remove();
             }
           });
-        }, 100);
-      })();
+
+          // E. 单独穿透清理：即使中间项没在 nav 里，只要命中直接物理拔除
+          var targets = header.querySelectorAll('a, button, span, div, li');
+          targets.forEach(function(el) {
+            if (el.closest('#lang-dropdown-wrapper') || el.id === 'custom-title-node') return;
+            var txt = (el.textContent || '').trim();
+
+            // 1. 中间导航文本
+            if (['首页', '印章模板', '关于我们', '联系我们', '水印'].some(function(k) { return txt === k; })) {
+              el.remove();
+            }
+            // 2. 登录按钮整块拔除
+            if (txt === '登录' || el.classList.contains('login-btn') || el.getAttribute('href') === '/login') {
+              var btnContainer = el.closest('button') || el;
+              btnContainer.remove();
+            }
+            // 3. 原作者的语言下拉选框整块拔除（只要包含 Language 或自带的下拉容器）
+            if (txt.indexOf('Language') !== -1 || el.classList.contains('language-select') || el.classList.contains('el-dropdown')) {
+              el.remove();
+            }
+            // 4. 原版遗留的纯文本 DrawStamp
+            if (txt === 'DrawStamp') {
+              el.textContent = '印章生成器';
+              el.id = 'custom-title-node';
+            }
+          });
+        }
+
+        // F. 修复图3模板图片裂开
+        var imgs = document.querySelectorAll('img');
+        imgs.forEach(function(img) {
+          if (!img.dataset.hasRecovered) {
+            img.dataset.hasRecovered = "true";
+            img.onerror = function() {
+              this.src = './logo64.png';
+              this.style.objectFit = 'contain';
+            };
+            if (img.complete && img.naturalWidth === 0) {
+              this.src = './logo64.png';
+              this.style.objectFit = 'contain';
+            }
+          }
+        });
+      }, 50);
     </script>
 
     <!-- Cloudflare Pages Analytics -->
