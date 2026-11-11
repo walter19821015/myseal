@@ -13,56 +13,43 @@
 
     <script>
       (function() {
-        var navigated = false;
+        var triggered = false;
 
-        function handleDomModifications() {
-          // 1. 将左侧所有 "DrawStamp" 物理替换为 "印章生成器"
-          var textNodes = document.querySelectorAll('header *, nav *, h1, a, span, div');
-          textNodes.forEach(function(el) {
-            if (el.children.length === 0 && el.textContent && el.textContent.trim() === 'DrawStamp') {
+        function initApp() {
+          // 1. 改名：左上角 DrawStamp -> 印章生成器
+          var allNodes = document.querySelectorAll('header *, nav *, h1, a, span, div');
+          allNodes.forEach(function(el) {
+            if (el.children.length === 0 && (el.textContent || '').trim() === 'DrawStamp') {
               el.textContent = '印章生成器';
             }
           });
 
-          // 2. 找到“印章模板”按钮
-          var allLinks = Array.from(document.querySelectorAll('header a, nav a, header button, nav button, span, div'));
-          var stampBtn = allLinks.find(function(el) {
+          // 2. 自动触发进入编辑台
+          if (triggered) return;
+          var isEditorVisible = !!document.querySelector('canvas, .canvas-container, [class*="canvas"]');
+          if (isEditorVisible) {
+            triggered = true;
+            return;
+          }
+
+          var candidates = Array.from(document.querySelectorAll('header a, nav a, header button, nav button, span, div'));
+          var stampTarget = candidates.find(function(el) {
             return (el.innerText || el.textContent || '').trim() === '印章模板';
           });
 
-          // 如果还没切入编辑页，且检测到了按钮：先模拟点击切进编辑页
-          if (stampBtn && !navigated) {
-            stampBtn.click();
-            navigated = true;
+          if (stampTarget) {
+            ['mousedown', 'mouseup', 'click'].forEach(function(evt) {
+              stampTarget.dispatchEvent(new MouseEvent(evt, { bubbles: true, cancelable: true, view: window }));
+            });
+            triggered = true;
           }
-
-          // 3. 点击切入后（或者检测到元素已经在编辑台），物理删除“印章模板”这 4 个字及对应节点
-          if (navigated && stampBtn) {
-            stampBtn.remove();
-          }
-
-          // 4. 清理残留的外围多余项
-          var links = document.querySelectorAll('header a, header button, nav a, nav button');
-          links.forEach(function(el) {
-            var txt = (el.innerText || el.textContent || '').trim();
-            if (txt === '首页' || txt === '关于我们' || txt === '联系我们' || txt === '登录') {
-              el.remove();
-            }
-          });
-
-          var footers = document.querySelectorAll('footer');
-          footers.forEach(function(el) { el.remove(); });
         }
 
-        // 持续监听 DOM 渲染变化
-        var observer = new MutationObserver(handleDomModifications);
+        var observer = new MutationObserver(initApp);
         observer.observe(document.body, { childList: true, subtree: true });
 
-        // 轮询触发，保证进站瞬间即刻响应
-        var pollTimer = setInterval(handleDomModifications, 40);
-        setTimeout(function() {
-          clearInterval(pollTimer);
-        }, 8000);
+        var timer = setInterval(initApp, 30);
+        setTimeout(function() { clearInterval(timer); }, 6000);
       })();
     </script>
   </body>
