@@ -23,22 +23,8 @@
     <script src="https://res.zvo.cn/translate/translate.js"></script>
 
     <style>
-      /* 永久封杀安全警告弹窗与横幅 */
-      .legal-disclaimer,
-      .legal-dialog-overlay,
-      .legal-dialog,
-      [class*="legal-disclaimer"],
-      [class*="legal-dialog"] {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-      }
-
-      /* 屏蔽所有首页宣传、原版中间导航、登录按钮、页脚 */
       .nav-links,
       .login-btn,
-      .user-actions,
       .language-switch,
       .nav-right,
       header select,
@@ -54,7 +40,6 @@
         display: none !important;
       }
 
-      /* 顶栏排版与自定义按钮 */
       .nav-content, header {
         display: flex !important;
         align-items: center !important;
@@ -96,7 +81,6 @@
         border-color: rgba(0, 0, 0, 0.25) !important;
       }
 
-      /* 底部操作图标容器与显示保证 */
       .canvas-footer {
         display: flex !important;
         align-items: center !important;
@@ -120,7 +104,6 @@
         filter: none !important;
       }
 
-      /* 抹除软盘图标旁边的 3/5 配额文字 */
       .save-count-badge,
       .save-count-small,
       [class*="save-count"] {
@@ -128,354 +111,35 @@
         font-size: 0 !important;
         visibility: hidden !important;
       }
-
-      /* 模板卡片原图展示 */
-      .template-preview,
-      .template-preview-small {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: #f8fafc !important;
-        height: 120px !important;
-        overflow: hidden !important;
-      }
-
-      .template-preview img,
-      .template-preview-small img {
-        display: block !important;
-        object-fit: contain !important;
-        width: 100% !important;
-        height: 100% !important;
-      }
-
-      /* ================= 弹窗底层与样式 ================= */
-      .native-modal-overlay {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        background: rgba(0, 0, 0, 0.45) !important;
-        display: none;
-        align-items: center !important;
-        justify-content: center !important;
-        z-index: 2147483647 !important;
-      }
-
-      .native-modal-window {
-        background: #ffffff !important;
-        border-radius: 8px !important;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
-        box-sizing: border-box !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif !important;
-      }
-
-      /* 图2：导出模板弹窗样式 */
-      .tpl-modal-box {
-        width: 540px !important;
-        max-width: 95vw !important;
-        padding: 24px 28px !important;
-      }
-      .tpl-modal-title {
-        color: #e53e3e !important;
-        font-size: 18px !important;
-        font-weight: 600 !important;
-        margin-bottom: 20px !important;
-        text-align: left !important;
-      }
-      .tpl-modal-center-label {
-        font-size: 13px !important;
-        color: #333333 !important;
-        text-align: center !important;
-        margin-bottom: 10px !important;
-      }
-      .tpl-input-field {
-        width: 100% !important;
-        height: 38px !important;
-        border: 1px solid #3b82f6 !important;
-        border-radius: 6px !important;
-        padding: 0 12px !important;
-        font-size: 14px !important;
-        box-sizing: border-box !important;
-        outline: none !important;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
-      }
-      .tpl-input-field-gray {
-        width: 100% !important;
-        height: 38px !important;
-        border: 1px solid #d9d9d9 !important;
-        border-radius: 6px !important;
-        padding: 0 12px !important;
-        font-size: 13px !important;
-        box-sizing: border-box !important;
-        outline: none !important;
-        color: #666666 !important;
-      }
-      .tpl-input-field-gray::placeholder {
-        color: #bfbfbf !important;
-      }
-
-      /* 图4：选择导出格式弹窗完整样式 */
-      .fmt-modal-box {
-        width: 530px !important;
-        max-width: 95vw !important;
-        padding: 24px 28px !important;
-        max-height: 90vh !important;
-        overflow-y: auto !important;
-      }
-      .fmt-modal-title {
-        color: #e53e3e !important;
-        font-size: 18px !important;
-        font-weight: 600 !important;
-        margin-bottom: 12px !important;
-        text-align: left !important;
-      }
-      .fmt-header-tip {
-        color: #e53e3e !important;
-        font-size: 13px !important;
-        text-align: center !important;
-        margin-bottom: 14px !important;
-      }
-      .fmt-option-card {
-        display: flex !important;
-        align-items: center !important;
-        border: 1px solid #d9d9d9 !important;
-        border-radius: 6px !important;
-        padding: 12px 16px !important;
-        margin-bottom: 10px !important;
-        cursor: pointer !important;
-        background: #ffffff !important;
-      }
-      .fmt-option-card.active {
-        border-color: #52c41a !important;
-        background: #f6ffed !important;
-      }
-      .fmt-badge {
-        font-size: 20px !important;
-        margin-right: 12px !important;
-      }
-
-      /* 滑块控件 */
-      .slider-track {
-        width: 100% !important;
-        accent-color: #52c41a !important;
-        cursor: pointer !important;
-      }
-
-      /* 比例胶囊按钮 */
-      .ratio-pill-btn {
-        padding: 4px 14px !important;
-        font-size: 12px !important;
-        border: 1px solid #d9d9d9 !important;
-        border-radius: 14px !important;
-        background: #ffffff !important;
-        cursor: pointer !important;
-        color: #1f2937 !important;
-      }
-      .ratio-pill-btn.active {
-        border-color: #007bff !important;
-        color: #007bff !important;
-      }
-
-      .btn-tpl-cancel {
-        padding: 6px 18px !important;
-        background: #f5f5f5 !important;
-        border: 1px solid #d9d9d9 !important;
-        color: #595959 !important;
-        border-radius: 4px !important;
-        cursor: pointer !important;
-        font-size: 13px !important;
-      }
-      .btn-tpl-confirm {
-        padding: 6px 20px !important;
-        background: #52c41a !important;
-        border: none !important;
-        color: #ffffff !important;
-        border-radius: 4px !important;
-        cursor: pointer !important;
-        font-size: 13px !important;
-      }
-      .btn-tpl-confirm:hover {
-        background: #73d13d !important;
-      }
     </style>
   </head>
   <body>
     <div id="app"></div>
 
-    <!-- ================= 导出模板弹窗（图1第二个按钮触发） ================= -->
-    <div id="popup-template-dialog" class="native-modal-overlay">
-      <div class="native-modal-window tpl-modal-box">
-        <div class="tpl-modal-title">导出模板</div>
-        
-        <div class="tpl-modal-center-label">请输入印章模板标题</div>
-        <input id="custom-tpl-title" type="text" class="tpl-input-field" value="印章类型" />
-
-        <div class="tpl-modal-center-label" style="margin-top: 18px;">
-          请输入印章分类 (可填多个，使用空格分隔，例如：书法印章 有机印章 节气)
-        </div>
-        <input id="custom-tpl-tags" type="text" class="tpl-input-field-gray" placeholder="请输入印章分类 (可填多个，使用空格分隔，例如：书法印章 有机印章 节气)" />
-
-        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:24px;">
-          <button id="btn-close-tpl" type="button" class="btn-tpl-cancel">取消</button>
-          <button id="btn-save-tpl-action" type="button" class="btn-tpl-confirm">导出</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ================= 选择导出格式弹窗（第四个软盘图标触发，动态换算联动） ================= -->
-    <div id="popup-export-dialog" class="native-modal-overlay">
-      <div class="native-modal-window fmt-modal-box">
-        <div class="fmt-modal-title">选择导出格式</div>
-        <div class="fmt-header-tip">请选择您要导出的图片格式：</div>
-
-        <!-- PNG -->
-        <div class="fmt-option-card active" onclick="changeFmt(this, 'png')">
-          <span class="fmt-badge">🖼️</span>
-          <span style="font-weight:600;width:60px;font-size:14px;text-align:left;color:#1f2937;">PNG</span>
-          <span style="font-size:12px;color:#8c8c8c;">支持透明背景，适合打印</span>
-        </div>
-
-        <!-- JPEG -->
-        <div class="fmt-option-card" onclick="changeFmt(this, 'jpeg')">
-          <span class="fmt-badge">📷</span>
-          <span style="font-weight:600;width:60px;font-size:14px;text-align:left;color:#1f2937;">JPEG</span>
-          <span style="font-size:12px;color:#8c8c8c;">文件较小，适合网络分享</span>
-        </div>
-
-        <!-- SVG -->
-        <div class="fmt-option-card" onclick="changeFmt(this, 'svg')">
-          <span class="fmt-badge">📐</span>
-          <span style="font-weight:600;width:60px;font-size:14px;text-align:left;color:#1f2937;">SVG</span>
-          <span style="font-size:12px;color:#8c8c8c;">矢量格式，可无损缩放</span>
-        </div>
-
-        <!-- JPEG专属质量滑块 -->
-        <div id="jpeg-quality-wrap" style="display:none;margin-top:14px;margin-bottom:14px;">
-          <div id="quality-val-label" style="text-align:center;font-size:13px;color:#333;margin-bottom:8px;">图片质量：70%</div>
-          <input id="quality-slider" type="range" min="10" max="100" value="70" class="slider-track" oninput="updateQuality(this.value)" />
-        </div>
-
-        <hr style="border:none;border-top:1px solid #f0f0f0;margin:14px 0;" />
-
-        <!-- 导出尺寸 -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <span style="font-size:13px;font-weight:600;color:#1f2937;">导出尺寸</span>
-          <span style="font-size:12px;color:#52c41a;cursor:pointer;" onclick="setRatio('origin')">恢复默认尺寸</span>
-        </div>
-
-        <!-- 固定比例 -->
-        <div style="text-align:center;font-size:13px;font-weight:600;color:#1f2937;margin-bottom:8px;">固定比例</div>
-        <div style="display:flex;gap:8px;justify-content:center;margin-bottom:8px;">
-          <button id="ratio-btn-origin" type="button" class="ratio-pill-btn active" onclick="setRatio('origin')">原始比例</button>
-          <button id="ratio-btn-square" type="button" class="ratio-pill-btn" onclick="setRatio('square')">正方形</button>
-          <button id="ratio-btn-4-3" type="button" class="ratio-pill-btn" onclick="setRatio('4:3')">4 : 3</button>
-          <button id="ratio-btn-16-9" type="button" class="ratio-pill-btn" onclick="setRatio('16:9')">16 : 9</button>
-          <button id="ratio-btn-custom" type="button" class="ratio-pill-btn" onclick="setRatio('custom')">自定义</button>
-        </div>
-
-        <div style="text-align:center;font-size:12px;color:#e53e3e;margin-bottom:10px;">选择固定宽高比，或使用自定义尺寸</div>
-
-        <!-- 宽高输入框 -->
-        <div style="display:flex;gap:18px;justify-content:center;align-items:center;">
-          <div style="text-align:center;">
-            <div style="font-size:12px;color:#595959;margin-bottom:4px;">宽度 (px)</div>
-            <input id="dyn-inp-w" type="number" value="420" oninput="onWidthChange(this.value)" style="width:120px;height:34px;text-align:center;border:1px solid #d9d9d9;border-radius:4px;outline:none;" />
-          </div>
-          <div style="text-align:center;">
-            <div style="font-size:12px;color:#595959;margin-bottom:4px;">高度 (px)</div>
-            <input id="dyn-inp-h" type="number" value="320" oninput="onHeightChange(this.value)" style="width:120px;height:34px;text-align:center;border:1px solid #d9d9d9;border-radius:4px;outline:none;" />
-          </div>
-        </div>
-
-        <div style="font-size:12px;color:#e53e3e;text-align:center;margin-top:10px;">默认尺寸：420px × 320px</div>
-        <div style="font-size:12px;color:#e53e3e;text-align:center;margin-top:2px;">支持 100px - 4096px 范围</div>
-
-        <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:20px;">
-          <button id="btn-close-exp" type="button" class="btn-tpl-cancel">取消</button>
-          <button id="btn-do-exp-action" type="button" class="btn-tpl-confirm">导出</button>
-        </div>
-      </div>
-    </div>
-
+    <!-- 原生 Vue 核心脚本 -->
     <script type="module" crossorigin src="./index-BeSQZLB_.js"></script>
 
     <script>
-      // 动态响应换算核心
-      window.curFormat = 'png';
-      window.curRatio = 'origin';
-
-      // 切换格式与滑块显示
-      window.changeFmt = function(el, fmt) {
-        document.querySelectorAll('.fmt-option-card').forEach(function(c) { c.classList.remove('active'); });
-        el.classList.add('active');
-        window.curFormat = fmt;
-
-        var qWrap = document.getElementById('jpeg-quality-wrap');
-        if (fmt === 'jpeg') {
-          qWrap.style.display = 'block';
-        } else {
-          qWrap.style.display = 'none';
-        }
-      };
-
-      // 滑块变动
-      window.updateQuality = function(val) {
-        document.getElementById('quality-val-label').textContent = '图片质量：' + val + '%';
-      };
-
-      // 比例按钮联动动态算数
-      window.setRatio = function(ratioType) {
-        window.curRatio = ratioType;
-        document.querySelectorAll('.ratio-pill-btn').forEach(function(b) { b.classList.remove('active'); });
-
-        var wInp = document.getElementById('dyn-inp-w');
-        var hInp = document.getElementById('dyn-inp-h');
-        var baseW = parseInt(wInp.value) || 420;
-
-        if (ratioType === 'origin') {
-          document.getElementById('ratio-btn-origin').classList.add('active');
-          wInp.value = 420;
-          hInp.value = 320;
-        } else if (ratioType === 'square') {
-          document.getElementById('ratio-btn-square').classList.add('active');
-          hInp.value = baseW;
-        } else if (ratioType === '4:3') {
-          document.getElementById('ratio-btn-4-3').classList.add('active');
-          hInp.value = Math.round(baseW * (3 / 4)); // 420 -> 315
-        } else if (ratioType === '16:9') {
-          document.getElementById('ratio-btn-16-9').classList.add('active');
-          hInp.value = Math.round(baseW * (9 / 16)); // 420 -> 236
-        } else if (ratioType === 'custom') {
-          document.getElementById('ratio-btn-custom').classList.add('active');
-        }
-      };
-
-      // 宽度修改时根据当前比例自动算出高度
-      window.onWidthChange = function(w) {
-        var valW = parseInt(w) || 0;
-        var hInp = document.getElementById('dyn-inp-h');
-        if (window.curRatio === 'square') {
-          hInp.value = valW;
-        } else if (window.curRatio === '4:3') {
-          hInp.value = Math.round(valW * (3 / 4));
-        } else if (window.curRatio === '16:9') {
-          hInp.value = Math.round(valW * (9 / 16));
-        } else if (window.curRatio === 'origin') {
-          hInp.value = Math.round(valW * (320 / 420));
-        }
-      };
-
-      window.onHeightChange = function() {
-        if (window.curRatio !== 'custom') {
-          document.querySelectorAll('.ratio-pill-btn').forEach(function(b) { b.classList.remove('active'); });
-          document.getElementById('ratio-btn-custom').classList.add('active');
-          window.curRatio = 'custom';
-        }
-      };
-
       (function() {
-        // 1. 标题重命名
+        // 0. 彻底解除每天 5 次下载限制（持续重置本地计数器，放行原版弹窗与正常图片下载）
+        var rawAlert = window.alert;
+        window.alert = function(msg) {
+          if (msg && String(msg).indexOf('最多下载') !== -1) return;
+          return rawAlert.apply(window, arguments);
+        };
+
+        setInterval(function() {
+          try {
+            for (var i = 0; i < localStorage.length; i++) {
+              var k = localStorage.key(i);
+              if (k && (k.indexOf('download') !== -1 || k.indexOf('count') !== -1 || k.indexOf('limit') !== -1 || k.indexOf('daily') !== -1)) {
+                localStorage.removeItem(k);
+              }
+            }
+          } catch(e) {}
+        }, 100);
+
+        // 1. 标题改为“印章生成器”
         setInterval(function() {
           var logo = document.querySelector('.logo');
           if (logo && logo.textContent !== '印章生成器') {
@@ -483,7 +147,7 @@
           }
         }, 150);
 
-        // 2. 自定义翻译菜单和首页按钮
+        // 2. 挂载首页与语言下拉菜单胶囊组件
         function mountTranslate() {
           if (document.getElementById('lang-dropdown-wrapper')) return;
           var navContainer = document.querySelector('.nav-content') || document.querySelector('.navbar') || document.querySelector('header');
@@ -534,7 +198,7 @@
         var mountTimer = setInterval(mountTranslate, 150);
         setTimeout(function() { clearInterval(mountTimer); }, 8000);
 
-        // 3. 模板真图拉取（保持原貌）
+        // 3. 模板真图修复
         function restoreTemplateImages() {
           var imgs = document.querySelectorAll('.template-list img, .template-grid img, .template-preview img, .template-preview-small img, [class*="template"] img');
           imgs.forEach(function(img) {
@@ -557,43 +221,11 @@
         }
         setInterval(restoreTemplateImages, 300);
 
-        // 4. 弹窗显示/隐藏控制
-        var popupTpl = document.getElementById('popup-template-dialog');
-        var popupExp = document.getElementById('popup-export-dialog');
-
-        document.getElementById('btn-close-tpl').onclick = function() { popupTpl.style.display = 'none'; };
-        document.getElementById('btn-close-exp').onclick = function() { popupExp.style.display = 'none'; };
-
-        popupTpl.onclick = function(e) { if (e.target === popupTpl) popupTpl.style.display = 'none'; };
-        popupExp.onclick = function(e) { if (e.target === popupExp) popupExp.style.display = 'none'; };
-
-        // 导出模板保存文件
-        document.getElementById('btn-save-tpl-action').onclick = function() {
-          var title = document.getElementById('custom-tpl-title').value.trim() || '印章模板';
-          var data = localStorage.getItem('drawstamp_current_stamp') || '{}';
-          var blob = new Blob([data], { type: 'application/json' });
-          var link = document.createElement('a');
-          link.download = title + '.json';
-          link.href = URL.createObjectURL(blob);
-          link.click();
-          popupTpl.style.display = 'none';
-        };
-
-        // 导出图片执行
-document.getElementById('btn-do-exp-action').onclick = function() {
-          popupExp.style.display = 'none';
-          var realBtn = document.querySelector('.confirm-button');
-          if (realBtn) {
-            realBtn.click();
-          }
-        };
-
-        // 5. 绑定图1操作台按钮事件
+        // 4. 解除第 4 个软盘按钮置灰，放行原版事件
         function bindAllActionButtons() {
           var btns = document.querySelectorAll('.canvas-footer .canvas-action-btn, .canvas-action-btn');
           if (!btns || btns.length < 4) return;
 
-          // A. 处理第4个软盘图标：彻底去灰、去 3/5 文字、绑定选择导出格式弹窗
           var fourthBtn = btns[3];
           if (fourthBtn) {
             fourthBtn.removeAttribute('disabled');
@@ -606,21 +238,8 @@ document.getElementById('btn-do-exp-action').onclick = function() {
               }
             });
           }
-
-          // B. 处理第2个上箭头图标：绑定导出模板弹窗
-          var secondBtn = btns[1];
-          if (secondBtn && !secondBtn.dataset.strictTplBound) {
-            secondBtn.dataset.strictTplBound = "true";
-            secondBtn.addEventListener('click', function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              e.stopImmediatePropagation();
-              popupTpl.style.display = 'flex';
-            }, true);
-          }
         }
-
-        setInterval(bindAllActionButtons, 100);
+        setInterval(bindAllActionButtons, 150);
       })();
     </script>
   </body>
